@@ -51,11 +51,8 @@ export const SEATED_EYE_HEIGHT = 1.12
 export const PLAYER_RADIUS = 0.24
 export const START_POSITION: [number, number, number] = [0, EYE_HEIGHT, 2.55]
 
-/** Plantas grandes nos cantos da parede da entrada. */
-export const FLOOR_PLANTS: [number, number][] = [
-  [-HALF_W + 0.3, HALF_L - 0.3],
-  [HALF_W - 0.3, HALF_L - 0.3],
-]
+/** Planta grande no canto da parede da entrada, do lado oposto à porta. */
+export const FLOOR_PLANTS: [number, number][] = [[-HALF_W + 0.3, HALF_L - 0.3]]
 
 /** Obstáculos no plano XZ: [minX, maxX, minZ, maxZ]. */
 export type Box2 = [number, number, number, number]
