@@ -104,7 +104,7 @@ async function loadInitial(set: (p: Partial<AppState>) => void) {
       list = list.filter((r) => !r.isDemo)
       await repository.setValue('demoRemoved', true)
     }
-    const settings = { ...DEFAULT_SETTINGS, ...((await repository.getValue<Partial<Settings>>('settings')) ?? {}) }
+    const settings = { ...DEFAULT_SETTINGS, ...((await repository.getValue<Partial<Settings>>('settings')) ?? {}), lampOn: true }
     const player = (await repository.getValue<PlayerState>('player')) ?? { recordId: null, playing: false }
     const records = Object.fromEntries(list.map((r) => [r.id, r]))
     if (player.recordId && !records[player.recordId]) player.recordId = null

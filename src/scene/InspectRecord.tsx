@@ -4,6 +4,7 @@ import { BoxGeometry, Euler, Group, MeshLambertMaterial, Quaternion, Vector3, ty
 import { coverTexture } from '../records/coverArt'
 import type { VinylRecord } from '../records/RecordModel'
 import { useAppStore } from '../store/useAppStore'
+import { inspectSpin } from './interaction'
 import { SHELF, SHELVES, recordZ, slotX } from './layout'
 
 const DURATION_IN = 0.55
@@ -41,6 +42,8 @@ export function InspectRecord() {
     if (target) {
       anim.t = 0
       anim.dir = 1
+      inspectSpin.yaw = 0
+      inspectSpin.pitch = 0
       useAppStore.getState().setInspecting(target)
     } else anim.dir = -1
   }, [target])
@@ -65,7 +68,7 @@ function Sleeve({ record }: { record: VinylRecord }) {
     const front = new MeshLambertMaterial({ map: cover, emissive: '#ffffff', emissiveMap: cover, emissiveIntensity: 0.35, depthTest: false })
     return [paper, paper, paper, paper, front, paper]
   }, [record])
-  const tmpRef = useRef({ p: new Vector3(), q: new Quaternion(), endP: new Vector3(), endQ: new Quaternion() })
+  const tmpRef = useRef({ p: new Vector3(), q: new Quaternion(), endP: new Vector3(), endQ: new Quaternion(), spin: new Quaternion(), e: new Euler(), cur: { yaw: 0, pitch: 0 } })
 
   useFrame((_, dt) => {
     const a = anim
@@ -74,7 +77,11 @@ function Sleeve({ record }: { record: VinylRecord }) {
     a.t = Math.min(1, Math.max(0, a.t + (dt / (a.dir > 0 ? DURATION_IN : DURATION_OUT)) * a.dir))
     const k = ease(a.t)
     tmp.endP.copy(HAND_OFFSET).applyQuaternion(camera.quaternion).add(camera.position)
-    tmp.endQ.copy(camera.quaternion).multiply(HAND_TILT)
+    // Giro suave seguindo o arrasto do mouse
+    tmp.cur.yaw += (inspectSpin.yaw - tmp.cur.yaw) * Math.min(1, dt * 12)
+    tmp.cur.pitch += (inspectSpin.pitch - tmp.cur.pitch) * Math.min(1, dt * 12)
+    tmp.spin.setFromEuler(tmp.e.set(tmp.cur.pitch, tmp.cur.yaw, 0))
+    tmp.endQ.copy(camera.quaternion).multiply(HAND_TILT).multiply(tmp.spin)
     tmp.p.lerpVectors(start.pos, tmp.endP, k)
     tmp.p.y += Math.sin(Math.PI * k) * 0.12 // arco
     tmp.q.copy(start.quat).slerp(tmp.endQ, k)

@@ -22,8 +22,8 @@ export function Lamp({ position, quality, aimAt }: { position: [number, number, 
   useFrame(() => {
     const on = useAppStore.getState().settings.lampOn
     const night = sampleEnv().night
-    const k = on ? 0.35 + night * 0.65 : 0
-    if (light.current) light.current.intensity = k * 5.5
+    const k = on ? 0.75 + night * 0.25 : 0
+    if (light.current) light.current.intensity = k * 9
     if (shade.current) (shade.current.material as MeshLambertMaterial).emissiveIntensity = on ? 0.1 + night * 0.25 : 0
   })
 
@@ -47,10 +47,10 @@ export function Lamp({ position, quality, aimAt }: { position: [number, number, 
         <cylinderGeometry args={[0.008, 0.008, 0.24, 6]} />
         <meshLambertMaterial color={red} />
       </mesh>
-      <group position={[-0.15, 0.48, 0]} rotation-z={0.55}>
+      <group position={[-0.15, 0.48, 0]} rotation-z={-0.65}>
         <mesh ref={shade} position={[0, -0.04, 0]}>
           <cylinderGeometry args={[0.035, 0.1, 0.12, 12, 1, true]} />
-          <meshLambertMaterial color={red} emissive="#ffb070" emissiveIntensity={0.3} side={DoubleSide} />
+          <meshLambertMaterial color={red} emissive="#ffc46a" emissiveIntensity={0.3} side={DoubleSide} />
         </mesh>
         <mesh position={[0, -0.075, 0]}>
           <sphereGeometry args={[0.035, 10, 8]} />
@@ -59,7 +59,7 @@ export function Lamp({ position, quality, aimAt }: { position: [number, number, 
       </group>
       <object3D ref={target} position={aimAt} />
       {quality === 'high' && (
-        <spotLight ref={light} position={[-0.17, 0.42, 0]} color="#ffb76a" angle={0.5} penumbra={0.8} distance={2.4} decay={1.2} intensity={1} />
+        <spotLight ref={light} position={[-0.17, 0.42, 0]} color="#ffcf6e" angle={0.55} penumbra={0.7} distance={2.4} decay={1.2} intensity={1} />
       )}
     </group>
   )

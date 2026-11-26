@@ -2,7 +2,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useRef } from 'react'
 import { Euler, Vector3 } from 'three'
 import { useAppStore } from '../store/useAppStore'
-import { cameraActions, cameraState, isTyping, pointerState } from './interaction'
+import { cameraActions, cameraState, inspectSpin, isTyping, pointerState } from './interaction'
 import { CHAIR, COLLIDERS, EYE_HEIGHT, HALF_L, HALF_W, PLAYER_RADIUS, SEATED_EYE_HEIGHT } from './layout'
 
 const PITCH_LIMIT = Math.PI / 2 - 0.08
@@ -24,6 +24,7 @@ export function CameraController() {
   const seated = useRef(false)
   const eyeY = useRef(EYE_HEIGHT)
   const drag = useRef<{ x: number; y: number; moved: number } | null>(null)
+  const bob = useRef({ phase: 0, amount: 0 })
 
   useEffect(() => {
     camera.position.copy(saved.pos)
@@ -38,7 +39,11 @@ export function CameraController() {
       if (document.pointerLockElement === gl.domElement) look(e.movementX, e.movementY)
       else if (drag.current) {
         drag.current.moved += Math.abs(e.movementX) + Math.abs(e.movementY)
-        look(-e.movementX * 0.9, -e.movementY * 0.9)
+        if (useAppStore.getState().inspecting) {
+          // Inspecionando: o arrasto gira o disco, não o cenário.
+          inspectSpin.yaw += e.movementX * 0.008
+          inspectSpin.pitch = Math.max(-1.2, Math.min(1.2, inspectSpin.pitch + e.movementY * 0.008))
+        } else look(-e.movementX * 0.9, -e.movementY * 0.9)
       }
     }
     const onDown = (e: PointerEvent) => {
@@ -121,8 +126,17 @@ export function CameraController() {
 
     eyeY.current += ((seated.current ? SEATED_EYE_HEIGHT : EYE_HEIGHT) - eyeY.current) * (1 - Math.exp(-dt * 6))
     p.y = eyeY.current
-    camera.position.copy(p)
-    camera.rotation.set(saved.pitch, saved.yaw, 0, 'YXZ')
+
+    // Balanço ao andar: a cabeça oscila para os lados e sobe/desce de leve a cada passo.
+    const speed = Math.hypot(vel.current.x, vel.current.z)
+    const walk = Math.min(1, speed / Math.max(0.5, settings.moveSpeed))
+    bob.current.amount += (walk - bob.current.amount) * (1 - Math.exp(-dt * 8))
+    bob.current.phase += dt * (4.2 + speed * 1.3) * (walk > 0.05 ? 1 : 0)
+    const a = bob.current.amount
+    const side = Math.sin(bob.current.phase) * 0.028 * a
+    const up = Math.abs(Math.cos(bob.current.phase)) * 0.022 * a
+    camera.position.set(p.x + Math.cos(saved.yaw) * side, p.y + up - 0.01 * a, p.z - Math.sin(saved.yaw) * side)
+    camera.rotation.set(saved.pitch, saved.yaw, Math.sin(bob.current.phase) * 0.008 * a, 'YXZ')
   })
 
   return null

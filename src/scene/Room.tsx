@@ -134,11 +134,6 @@ function WindowFrame({ x0, x1, y0, y1 }: { x0: number; x1: number; y0: number; y
   const c = '#fbf8f2'
   return (
     <group>
-      {/* Peitoril */}
-      <mesh position={[cx, y0 - 0.02, -HALF_L + 0.04]}>
-        <boxGeometry args={[w + 0.16, 0.04, 0.24]} />
-        <meshLambertMaterial color={c} />
-      </mesh>
       {/* Molduras */}
       {[
         [cx, y1, w + 0.06, 0.05],

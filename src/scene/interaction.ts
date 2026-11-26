@@ -38,3 +38,6 @@ export const isTyping = () => {
 
 /** Posição da câmera preservada fora do React (sobrevive a painéis abertos e trocas de qualidade). */
 export const cameraState = { pos: new Vector3(...START_POSITION), yaw: 0, pitch: -0.04 }
+
+/** Rotação do disco na mão, controlada arrastando com o botão esquerdo durante a inspeção. */
+export const inspectSpin = { yaw: 0, pitch: 0 }
