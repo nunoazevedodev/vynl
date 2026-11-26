@@ -262,19 +262,3 @@ export const basketballTexture = () =>
     g.stroke()
   }, [1, 1], true)
 
-/** Camisa 10 listrada azul/grená, com nome e número (sem escudo nem patrocínios). */
-export const jerseyTexture = () =>
-  make('jersey', [96, 112], (g, w, h) => {
-    const stripe = w / 7
-    for (let i = 0; i < 7; i++) {
-      g.fillStyle = i % 2 ? '#a3233f' : '#1d3f8a'
-      g.fillRect(i * stripe, 0, stripe, h)
-    }
-    noise(g, w, h, 14, 91)
-    g.fillStyle = '#f2c23a'
-    g.textAlign = 'center'
-    g.font = 'bold 15px monospace'
-    g.fillText('MESSI', w / 2, 34)
-    g.font = 'bold 44px monospace'
-    g.fillText('10', w / 2, 78)
-  }, [1, 1], true)
