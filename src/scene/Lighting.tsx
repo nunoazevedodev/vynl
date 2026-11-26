@@ -6,7 +6,7 @@ import { HALF_L, HALF_W, ROOM, WINDOW } from './layout'
 import { blindsLightTexture } from './textures'
 import { sampleEnv, timeState } from './timeOfDay'
 
-const warm = new Color('#ffcf94')
+const warm = new Color('#ffb066')
 const tmp = new Color()
 
 /**
@@ -29,7 +29,9 @@ export function Lighting({ quality }: { quality: 'high' | 'low' }) {
     if (hemi.current) {
       hemi.current.color.copy(env.hemiSky)
       hemi.current.groundColor.copy(env.hemiGround)
-      hemi.current.intensity = env.hemiIntensity * 1.15 + env.night * 0.25
+      // Com a luz do teto apagada, a noite fica bem mais escura (sobra a cidade e o abajur).
+      const ceilingOn = useAppStore.getState().settings.ceilingOn
+      hemi.current.intensity = env.hemiIntensity * 1.15 + (ceilingOn ? env.night * 0.25 : 0.05)
     }
     if (sun.current) {
       sun.current.color.copy(env.sun)
@@ -38,8 +40,9 @@ export function Lighting({ quality }: { quality: 'high' | 'low' }) {
     }
     if (ceiling.current) {
       // Luz interna: acende suavemente ao entardecer, com tom mais quente.
-      ceiling.current.intensity = 0.5 + env.night * 1.1
-      ceiling.current.color.copy(tmp.copy(env.hemiSky).lerp(warm, 0.4 + env.night * 0.5))
+      const on = useAppStore.getState().settings.ceilingOn
+      ceiling.current.intensity = on ? 0.6 + env.night * 1.3 : 0
+      ceiling.current.color.copy(tmp.copy(env.hemiSky).lerp(warm, 0.75 + env.night * 0.25))
     }
     // Faixas da persiana: sol de dia, luar/cidade de noite.
     const strength = Math.max(0, env.sunElevation + 0.05) * env.sunIntensity * 0.32 + env.night * 0.1

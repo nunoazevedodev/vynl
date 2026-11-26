@@ -24,11 +24,11 @@ export function Lamp({ position, quality, aimAt }: { position: [number, number, 
     const night = sampleEnv().night
     const k = on ? 0.75 + night * 0.25 : 0
     if (light.current) light.current.intensity = k * 9
-    if (shade.current) (shade.current.material as MeshLambertMaterial).emissiveIntensity = on ? 0.1 + night * 0.25 : 0
+    if (shade.current) (shade.current.material as MeshLambertMaterial).emissiveIntensity = on ? 0.12 + night * 0.12 : 0
   })
 
   // Luminária articulada vermelha (como na referência)
-  const red = '#a83a2c'
+  const red = '#a8352a'
   return (
     <group position={position}>
       <mesh position={[0, 0.02, 0]}>
@@ -41,7 +41,7 @@ export function Lamp({ position, quality, aimAt }: { position: [number, number, 
       </mesh>
       <mesh position={[0.05, 0.38, 0]}>
         <sphereGeometry args={[0.018, 8, 6]} />
-        <meshLambertMaterial color="#5a2a20" />
+        <meshLambertMaterial color={red} />
       </mesh>
       <mesh position={[-0.05, 0.44, 0]} rotation-z={1.0}>
         <cylinderGeometry args={[0.008, 0.008, 0.24, 6]} />
@@ -50,16 +50,16 @@ export function Lamp({ position, quality, aimAt }: { position: [number, number, 
       <group position={[-0.15, 0.48, 0]} rotation-z={-0.65}>
         <mesh ref={shade} position={[0, -0.04, 0]}>
           <cylinderGeometry args={[0.035, 0.1, 0.12, 12, 1, true]} />
-          <meshLambertMaterial color={red} emissive="#ffc46a" emissiveIntensity={0.3} side={DoubleSide} />
+          <meshLambertMaterial color={red} emissive={red} emissiveIntensity={0.15} side={DoubleSide} />
         </mesh>
         <mesh position={[0, -0.075, 0]}>
           <sphereGeometry args={[0.035, 10, 8]} />
-          <meshBasicMaterial color="#fff1c8" />
+          <meshBasicMaterial color="#ffd27a" />
         </mesh>
       </group>
       <object3D ref={target} position={aimAt} />
       {quality === 'high' && (
-        <spotLight ref={light} position={[-0.17, 0.42, 0]} color="#ffcf6e" angle={0.55} penumbra={0.7} distance={2.4} decay={1.2} intensity={1} />
+        <spotLight ref={light} position={[-0.17, 0.42, 0]} color="#ffb347" angle={0.48} penumbra={0.7} distance={2.4} decay={1.2} intensity={1} />
       )}
     </group>
   )

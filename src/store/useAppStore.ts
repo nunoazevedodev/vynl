@@ -14,6 +14,8 @@ export interface Settings {
   cycleMinutes: number
   cyclePaused: boolean
   lampOn: boolean
+  /** Luz do teto (interruptor ao lado da porta). */
+  ceilingOn: boolean
   /** Visual PS2: resolução interna baixa, texturas sem suavização e pontilhado. */
   ps2Look: boolean
   /** Token pessoal do Discogs (fica só neste navegador). */
@@ -28,6 +30,7 @@ export const DEFAULT_SETTINGS: Settings = {
   cycleMinutes: 11,
   cyclePaused: false,
   lampOn: true,
+  ceilingOn: true,
   ps2Look: true,
   discogsToken: '',
 }
@@ -35,7 +38,7 @@ export const DEFAULT_SETTINGS: Settings = {
 export type HoverInfo =
   | { kind: 'record'; recordId: string; label: string }
   | { kind: 'emptySlot'; location: RecordLocation; label: string }
-  | { kind: 'player' | 'display' | 'lamp' | 'chair'; label: string }
+  | { kind: 'player' | 'display' | 'lamp' | 'chair' | 'switch'; label: string }
 
 export type Panel =
   | { type: 'details'; id: string }

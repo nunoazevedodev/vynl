@@ -132,7 +132,7 @@ export const rugTexture = () =>
 
 export const fabricTexture = () =>
   make('fabric', [64, 64], (g, w, h) => {
-    g.fillStyle = '#5d7a64'
+    g.fillStyle = '#66704a'
     g.fillRect(0, 0, w, h)
     for (let y = 0; y < h; y += 2) {
       g.fillStyle = `rgba(0,0,0,${y % 4 === 0 ? 0.06 : 0.02})`

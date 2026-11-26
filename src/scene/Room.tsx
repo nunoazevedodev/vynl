@@ -1,5 +1,7 @@
-import { useLayoutEffect, useMemo, useRef } from 'react'
-import { DoubleSide, Object3D, type InstancedMesh } from 'three'
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
+import { useAppStore } from '../store/useAppStore'
+import { registerInteractable } from './interaction'
+import { DoubleSide, Object3D, type InstancedMesh, type Mesh } from 'three'
 import { HALF_L, HALF_W, ROOM, WINDOW } from './layout'
 import { ceilingTexture, floorTexture, rugTexture, wallTexture, woodTexture } from './textures'
 
@@ -10,7 +12,6 @@ export function Room() {
   const wall = wallTexture()
   const floor = floorTexture()
   const ceiling = ceilingTexture()
-  const wood = woodTexture('light')
 
   const wx0 = WINDOW.x - WINDOW.width / 2
   const wx1 = WINDOW.x + WINDOW.width / 2
@@ -45,11 +46,7 @@ export function Room() {
         <planeGeometry args={[ROOM.width, ROOM.length]} />
         <meshLambertMaterial map={ceiling} />
       </mesh>
-      {/* Luminária de teto */}
-      <mesh position={[0, H - 0.03, -0.4]}>
-        <cylinderGeometry args={[0.28, 0.32, 0.06, 16]} />
-        <meshBasicMaterial color="#fff3dc" />
-      </mesh>
+      <CeilingFixture />
 
       {/* Paredes longas */}
       <mesh position={[-HALF_W, H / 2, 0]} rotation-y={Math.PI / 2}>
@@ -84,7 +81,7 @@ export function Room() {
       <group position={[0.95, 0, HALF_L - 0.01]}>
         <mesh position={[0, 1.03, 0]}>
           <boxGeometry args={[0.92, 2.06, 0.04]} />
-          <meshLambertMaterial map={wood} color="#e9dcc6" />
+          <meshLambertMaterial map={woodTexture('dark')} color="#c8a888" />
         </mesh>
         <mesh position={[0, 1.05, -0.015]}>
           <boxGeometry args={[1.04, 2.14, 0.03]} />
@@ -95,11 +92,7 @@ export function Room() {
           <meshLambertMaterial color="#b99a5a" />
         </mesh>
       </group>
-      {/* Interruptor */}
-      <mesh position={[0.35, 1.15, HALF_L - 0.01]}>
-        <boxGeometry args={[0.08, 0.12, 0.015]} />
-        <meshLambertMaterial color="#f8f6f2" />
-      </mesh>
+      <LightSwitch />
     </group>
   )
 }
@@ -237,5 +230,35 @@ function Blinds({ x0, x1, y0, y1 }: { x0: number; x1: number; y0: number; y1: nu
         </mesh>
       ))}
     </group>
+  )
+}
+
+/** Interruptor ao lado da porta: liga e desliga a luz do teto. */
+function LightSwitch() {
+  const ref = useRef<Mesh>(null)
+  const on = useAppStore((s) => s.settings.ceilingOn)
+  useEffect(() => registerInteractable(ref.current, { kind: 'switch' }), [])
+  return (
+    <group position={[0.3, 1.15, HALF_L - 0.008]} rotation-y={Math.PI}>
+      <mesh ref={ref}>
+        <boxGeometry args={[0.08, 0.12, 0.012]} />
+        <meshLambertMaterial color="#f4efe6" />
+      </mesh>
+      <mesh position={[0, 0, 0.01]} rotation-x={on ? -0.25 : 0.25}>
+        <boxGeometry args={[0.022, 0.04, 0.012]} />
+        <meshLambertMaterial color="#e8e2d6" />
+      </mesh>
+    </group>
+  )
+}
+
+/** Plafon do teto: aceso (amarelado) ou apagado. */
+function CeilingFixture() {
+  const on = useAppStore((s) => s.settings.ceilingOn)
+  return (
+    <mesh position={[0, H - 0.03, -0.4]}>
+      <cylinderGeometry args={[0.28, 0.32, 0.06, 16]} />
+      <meshBasicMaterial color={on ? '#ffdca0' : '#5a5650'} />
+    </mesh>
   )
 }

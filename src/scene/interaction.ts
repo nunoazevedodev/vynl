@@ -11,6 +11,7 @@ export type InteractTag =
   | { kind: 'display' }
   | { kind: 'lamp' }
   | { kind: 'chair' }
+  | { kind: 'switch' }
 
 export const interactables = new Set<Object3D>()
 

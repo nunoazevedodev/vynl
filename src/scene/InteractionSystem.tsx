@@ -58,6 +58,9 @@ export function InteractionSystem() {
         case 'chair':
           cameraActions.sit()
           break
+        case 'switch':
+          st.updateSettings({ ceilingOn: !st.settings.ceilingOn })
+          break
       }
       return true
     }
@@ -153,6 +156,8 @@ function describe(obj: Object3D, point: import('three').Vector3): HoverInfo | nu
       return { kind: 'lamp', label: st.settings.lampOn ? 'Abajur · Apagar' : 'Abajur · Acender' }
     case 'chair':
       return { kind: 'chair', label: 'Poltrona · Sentar' }
+    case 'switch':
+      return { kind: 'switch', label: st.settings.ceilingOn ? 'Interruptor · Apagar a luz' : 'Interruptor · Acender a luz' }
   }
 }
 
