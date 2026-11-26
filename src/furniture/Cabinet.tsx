@@ -64,9 +64,10 @@ export function Cabinet({ quality }: { quality: 'high' | 'low' }) {
       )}
       <RecordPlayer position={[-W / 2 + 0.3, H, 0]} />
       <RecordDisplay position={[-0.08, H, -0.06]} />
-      <Lamp position={[0.24, H, -0.12]} quality={quality} aimAt={[-0.6, 0, 0.06]} />
-      <Mug position={[0.48, H, 0.09]} />
-      <Plant position={[0.68, H, -0.06]} seed={4} />
+      <Mug position={[0.17, H, 0.1]} />
+      <Plant position={[0.33, H, -0.08]} seed={4} />
+      {/* Abajur bem na ponta da mesa, iluminando o tampo, o expositor e a radiola */}
+      <Lamp position={[0.76, H, -0.08]} quality={quality} aimAt={[-0.85, 0, 0.12]} />
     </group>
   )
 }

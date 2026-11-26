@@ -132,7 +132,7 @@ export const rugTexture = () =>
 
 export const fabricTexture = () =>
   make('fabric', [64, 64], (g, w, h) => {
-    g.fillStyle = '#66704a'
+    g.fillStyle = '#34466e'
     g.fillRect(0, 0, w, h)
     for (let y = 0; y < h; y += 2) {
       g.fillStyle = `rgba(0,0,0,${y % 4 === 0 ? 0.06 : 0.02})`
@@ -227,11 +227,3 @@ export const checkerTexture = () =>
     noise(g, w, h, 14, 21)
   }, [1, 1], true)
 
-/** Grade metálica do alto-falante (furinhos). */
-export const grilleTexture = () =>
-  make('grille', [64, 64], (g, w, h) => {
-    g.fillStyle = '#26262a'
-    g.fillRect(0, 0, w, h)
-    g.fillStyle = '#0c0c0e'
-    for (let y = 1; y < h; y += 3) for (let x = (y % 2) + 1; x < w; x += 3) g.fillRect(x, y, 1.5, 1.5)
-  }, [4, 4], true)

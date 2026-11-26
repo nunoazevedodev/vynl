@@ -1,4 +1,4 @@
-import { Heart, Library, Settings2 } from 'lucide-react'
+import { PixelIcon } from './PixelIcon'
 import { useAppStore } from '../store/useAppStore'
 import { InteractionHint } from './InteractionHint'
 
@@ -29,15 +29,15 @@ export function Hud() {
         </div>
       )}
       {!panel && (
-        <div className="fixed bottom-4 left-4 flex gap-1.5 opacity-55 transition-opacity hover:opacity-100">
+        <div className="fixed bottom-4 left-4 flex gap-2 opacity-70 transition-opacity hover:opacity-100">
           <IconButton label="Coleção" onClick={() => setPanel({ type: 'collection' })}>
-            <Library size={16} />
+            <PixelIcon name="library" />
           </IconButton>
           <IconButton label="Lista de desejos" onClick={() => setPanel({ type: 'wishlist' })}>
-            <Heart size={16} />
+            <PixelIcon name="heart" />
           </IconButton>
           <IconButton label="Configurações" onClick={() => setPanel({ type: 'settings' })}>
-            <Settings2 size={16} />
+            <PixelIcon name="settings" />
           </IconButton>
         </div>
       )}
@@ -51,7 +51,7 @@ function IconButton({ label, onClick, children }: { label: string; onClick: () =
       title={label}
       aria-label={label}
       onClick={onClick}
-      className="grid h-8 w-8 place-items-center rounded-md bg-[#1f1a16]/60 text-[#f4ecdc] backdrop-blur-sm hover:bg-[#1f1a16]/85"
+      className="ps2-btn grid h-9 w-9 place-items-center text-[#f4ecdc]"
     >
       {children}
     </button>

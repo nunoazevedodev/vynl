@@ -5,10 +5,10 @@ import { CHAIR } from '../scene/layout'
 import { registerInteractable } from '../scene/interaction'
 import { fabricTexture } from '../scene/textures'
 
-const TINT = '#d8d8d0' // escurece levemente a textura verde-oliva
+const TINT = '#c8ccd8' // azul-escuro
 
 /**
- * Poltrona como na arte de referência: verde-oliva, encosto alto de cantos
+ * Poltrona como na arte de referência: azul-escuro, encosto alto de cantos
  * bem arredondados, braços grossos que se enrolam para fora e assento fofo.
  */
 export function Armchair() {

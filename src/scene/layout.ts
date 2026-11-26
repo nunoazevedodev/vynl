@@ -44,8 +44,7 @@ export const SHELVES: ShelfPlacement[] = [
 export const WINDOW = { x: -0.3, y: 1.5, width: 1.6, height: 1.15 }
 export const CABINET = { x: -0.4, z: -HALF_L + 0.25, width: 1.7, height: 0.62, depth: 0.46 }
 export const CHAIR = { x: 1.0, z: -2.5, rotationY: -0.55 }
-/** Caixa de som grande, à esquerda da radiola. */
-export const SPEAKER = { x: -1.58, z: -2.92, rotationY: 0.3, width: 0.5, height: 1.05, depth: 0.4 }
+
 
 export const EYE_HEIGHT = 1.6
 export const SEATED_EYE_HEIGHT = 1.12
@@ -61,5 +60,4 @@ export const COLLIDERS: Box2[] = [
   }),
   [CABINET.x - CABINET.width / 2, CABINET.x + CABINET.width / 2, -HALF_L, CABINET.z + CABINET.depth / 2],
   [CHAIR.x - 0.45, CHAIR.x + 0.45, CHAIR.z - 0.45, CHAIR.z + 0.45],
-  [SPEAKER.x - 0.3, SPEAKER.x + 0.3, SPEAKER.z - 0.3, SPEAKER.z + 0.3],
 ]

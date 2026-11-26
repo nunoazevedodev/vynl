@@ -6,7 +6,6 @@ import { Armchair } from '../furniture/Armchair'
 import { WallShelf } from '../furniture/Decor'
 import { Cabinet } from '../furniture/Cabinet'
 import { Posters } from '../furniture/Posters'
-import { Speaker } from '../furniture/Speaker'
 import { VinylShelf } from '../furniture/VinylShelf'
 import { useAppStore } from '../store/useAppStore'
 import { CameraController } from './CameraController'
@@ -55,7 +54,6 @@ export function Experience() {
       ))}
       <Cabinet quality={quality} />
       <Armchair />
-      <Speaker />
       <Posters />
       <WallShelf position={[-HALF_W, 1.95, 0.55]} rotationY={Math.PI / 2} />
       <WallShelf position={[HALF_W, 1.95, -1.42]} rotationY={-Math.PI / 2} />

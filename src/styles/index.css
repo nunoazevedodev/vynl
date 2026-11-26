@@ -100,3 +100,19 @@ input, textarea, select { user-select: text; }
   background: #6e6a40;
   border: 2px solid #f4e6d0;
 }
+
+/* Botões quadrados com chanfro, estilo menu de PS2 */
+.ps2-btn {
+  background: linear-gradient(180deg, rgba(58, 48, 40, 0.85), rgba(26, 20, 16, 0.85));
+  border: 2px solid #8a7558;
+  box-shadow: inset 1px 1px 0 rgba(255, 240, 210, 0.35), inset -1px -1px 0 rgba(0, 0, 0, 0.5), 2px 2px 0 rgba(0, 0, 0, 0.45);
+  image-rendering: pixelated;
+}
+.ps2-btn:hover {
+  border-color: #e8c37a;
+  color: #ffe2a0;
+}
+.ps2-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: inset 1px 1px 0 rgba(0, 0, 0, 0.5), 1px 1px 0 rgba(0, 0, 0, 0.45);
+}
