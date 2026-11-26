@@ -10,6 +10,7 @@ import { VinylShelf } from '../furniture/VinylShelf'
 import { useAppStore } from '../store/useAppStore'
 import { CameraController } from './CameraController'
 import { CityView } from './CityView'
+import { InspectRecord } from './InspectRecord'
 import { InteractionSystem } from './InteractionSystem'
 import { HALF_W, SHELVES } from './layout'
 import { Lighting } from './Lighting'
@@ -56,6 +57,7 @@ export function Experience() {
       <Posters />
       <WallShelf position={[-HALF_W, 1.95, 0.55]} rotationY={Math.PI / 2} />
       <WallShelf position={[HALF_W, 1.95, -1.42]} rotationY={-Math.PI / 2} />
+      <InspectRecord />
       <CameraController />
       <InteractionSystem />
     </Canvas>

@@ -38,7 +38,12 @@ export function InteractionSystem() {
           st.setPanel({ type: 'details', id: h.recordId })
           break
         case 'emptySlot':
-          st.setPanel({ type: 'form', location: h.location })
+          if (st.moving) {
+            const r = st.records[st.moving]
+            if (r) st.saveRecord({ ...r, location: h.location })
+            st.setMoving(null)
+            st.showToast('Disco movido.')
+          } else st.setPanel({ type: 'form', location: h.location })
           break
         case 'player':
           st.togglePlay()
@@ -73,6 +78,10 @@ export function InteractionSystem() {
       if (isTyping()) return
       const st = useAppStore.getState()
       if (e.code === 'Escape' && st.panel) st.setPanel(null)
+      if (e.code === 'Escape' && st.moving) {
+        st.setMoving(null)
+        st.showToast('Movimento cancelado.')
+      }
       if ((e.code === 'KeyE' && st.settings.navMode === 'fps') || e.code === 'Enter' || e.code === 'Space') {
         if (!st.panel && st.entered && interact()) e.preventDefault()
       }
@@ -131,7 +140,7 @@ function describe(obj: Object3D, point: import('three').Vector3): HoverInfo | nu
         const r = st.records[id]
         return { kind: 'record', recordId: id, label: `${r.artist} — ${r.title}` }
       }
-      return { kind: 'emptySlot', location, label: 'Espaço livre · Adicionar disco' }
+      return { kind: 'emptySlot', location, label: st.moving ? 'Mover para cá' : 'Adicionar disco' }
     }
     case 'player': {
       const p = st.player

@@ -39,7 +39,7 @@ export function CollectionPanel() {
             <button className="flex w-full items-center gap-2 rounded-md px-1.5 py-1.5 text-left hover:bg-black/5" onClick={() => setPanel({ type: 'details', id: r.id })}>
               <span className="h-8 w-1.5 shrink-0 rounded-sm" style={{ background: r.spineColor }} />
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-semibold">
+                <span className="block truncate text-sm font-normal">
                   {r.title} {r.isDemo && <span className="text-[10px] font-normal text-warm">demo</span>}
                 </span>
                 <span className="block truncate text-xs text-ink-soft">
@@ -59,7 +59,7 @@ function Stat({ k, v }: { k: string; v: string }) {
   return (
     <div className="rounded-md bg-black/5 p-1.5">
       <div className="text-[10px] uppercase tracking-wide text-ink-soft">{k}</div>
-      <div className="truncate font-bold">{v}</div>
+      <div className="truncate font-medium">{v}</div>
     </div>
   )
 }

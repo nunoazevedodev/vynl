@@ -80,7 +80,7 @@ export function SettingsPanel() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mb-4 flex flex-col gap-2 last:mb-0">
-      <h3 className="text-[11px] font-bold uppercase tracking-wider text-ink-soft">{title}</h3>
+      <h3 className="text-[11px] font-medium uppercase tracking-wider text-ink-soft">{title}</h3>
       {children}
     </section>
   )

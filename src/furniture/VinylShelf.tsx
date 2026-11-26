@@ -58,7 +58,8 @@ function ShelfFrame() {
 function ShelfRecords({ shelf }: { shelf: number }) {
   const ref = useRef<InstancedMesh>(null)
   const records = useAppStore((s) => s.records)
-  const selectedId = useAppStore((s) => (s.panel?.type === 'details' || s.panel?.type === 'form' ? s.panel.id : undefined))
+  const inspecting = useAppStore((s) => s.inspecting)
+  const moving = useAppStore((s) => s.moving)
   const mine = useMemo(() => Object.values(records).filter((r) => r.location.shelf === shelf), [records, shelf])
 
   // Geometria própria por estante (carrega o atributo de "qual capa do atlas").
@@ -99,16 +100,18 @@ function ShelfRecords({ shelf }: { shelf: number }) {
       const { row, slot } = r.location
       const i = row * SLOTS_PER_ROW + slot
       const jitter = ((slot * 7919 + row * 31) % 13) / 13 - 0.5
-      o.position.set(slotX(slot), SHELF.rowY[row] + SHELF.recordH / 2, recordZ + (r.id === selectedId ? 0.1 : jitter * 0.006))
+      o.position.set(slotX(slot), SHELF.rowY[row] + SHELF.recordH / 2, recordZ + (r.id === moving ? 0.12 : jitter * 0.006))
       o.rotation.set(0, 0, jitter * 0.012)
-      o.scale.set(1, 1, 1)
+      // Enquanto está "na mão", o disco some da estante.
+      const s = r.id === inspecting ? 0 : 1
+      o.scale.set(s, s, s)
       o.updateMatrix()
       m.setMatrixAt(i, o.matrix)
       atlas.set(i, r)
     }
     m.instanceMatrix.needsUpdate = true
     m.computeBoundingSphere()
-  }, [mine, selectedId, atlas])
+  }, [mine, inspecting, moving, atlas])
 
   return <instancedMesh ref={ref} args={[geometry, material, CAPACITY]} />
 }

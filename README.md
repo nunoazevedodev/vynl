@@ -24,6 +24,10 @@ npm run preview    # serve o build
 
 As estantes começam vazias. Para adicionar um disco, aponte para um espaço livre na prateleira (ou use o **+**) e digite o nome do álbum: o app busca no **Discogs** e, ao escolher um resultado, o disco já vai para a estante com **capa**, **ano**, **faixas** e **valor estimado**. Os detalhes do disco mostram só isso: capa, nome, ano, faixas e valor.
 
+**Capas originais:** o app baixa a capa do Discogs; se o servidor de imagens do Discogs não liberar o download (necessário para mostrar a capa no 3D), busca a mesma capa no **Cover Art Archive** (MusicBrainz), que é gratuito e não precisa de chave. Discos antigos sem capa local são corrigidos automaticamente ao abrir o app.
+
+**Mover um disco:** abra o disco → ícone ⇄ → clique num espaço vazio da estante (Esc cancela).
+
 **Valor estimado:** usa a sugestão de preço do Discogs para VG+ (`/marketplace/price_suggestions`, só funciona se a sua conta tiver o perfil de vendedor configurado) e, se não houver, o menor preço anunciado no Marketplace em reais (`/marketplace/stats`). Dá para atualizar pelo ícone ao lado do valor.
 
 1. Gere um token pessoal (grátis) em https://www.discogs.com/settings/developers → *Generate new token*.

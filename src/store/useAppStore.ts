@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { repository } from '../data/database'
+import { resolveCover } from '../records/covers'
 import { buildSlotIndex, slotKey, type RecordLocation, type VinylRecord } from '../records/RecordModel'
 
 export type NavMode = 'fps' | 'accessible'
@@ -58,6 +59,10 @@ interface AppState {
   hover: HoverInfo | null
   pointerLocked: boolean
   entered: boolean
+  /** Disco sendo movido: o próximo clique num espaço vazio leva ele para lá. */
+  moving: string | null
+  /** Disco que está "na mão" (fora da estante durante a inspeção). */
+  inspecting: string | null
   toast: { id: number; text: string } | null
 
   init(): Promise<void>
@@ -68,6 +73,8 @@ interface AppState {
   setHover(h: HoverInfo | null): void
   setPointerLocked(v: boolean): void
   setEntered(v: boolean): void
+  setMoving(id: string | null): void
+  setInspecting(id: string | null): void
   updateSettings(p: Partial<Settings>): void
   placeOnPlayer(id: string): void
   togglePlay(): void
@@ -76,6 +83,16 @@ interface AppState {
 }
 
 let initPromise: Promise<void> | null = null
+
+/** Discos antigos sem capa local: tenta baixar a capa original de novo (Discogs → Cover Art Archive). */
+async function backfillCovers() {
+  const pending = Object.values(useAppStore.getState().records).filter((r) => !r.coverDataUrl && (r.coverRemoteUrl || r.discogsId))
+  for (const r of pending) {
+    const cover = await resolveCover(r.coverRemoteUrl, r.artist, r.title)
+    const cur = useAppStore.getState().records[r.id]
+    if (cover && cur) useAppStore.getState().saveRecord({ ...cur, coverDataUrl: cover, coverRemoteUrl: undefined })
+  }
+}
 
 async function loadInitial(set: (p: Partial<AppState>) => void) {
   try {
@@ -92,6 +109,7 @@ async function loadInitial(set: (p: Partial<AppState>) => void) {
     const records = Object.fromEntries(list.map((r) => [r.id, r]))
     if (player.recordId && !records[player.recordId]) player.recordId = null
     set({ records, slotIndex: buildSlotIndex(records), settings, player: { ...player, playing: false }, loaded: true })
+    void backfillCovers()
   } catch (e) {
     console.warn('[vynl] IndexedDB indisponível, usando memória', e)
     set({ records: {}, slotIndex: new Map(), loaded: true })
@@ -114,6 +132,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   hover: null,
   pointerLocked: false,
   entered: false,
+  moving: null,
+  inspecting: null,
   toast: null,
 
   init() {
@@ -157,6 +177,12 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   setEntered(entered) {
     set({ entered })
+  },
+  setMoving(moving) {
+    set({ moving })
+  },
+  setInspecting(inspecting) {
+    set({ inspecting })
   },
   updateSettings(p) {
     const settings = { ...get().settings, ...p }

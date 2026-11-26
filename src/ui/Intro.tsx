@@ -18,15 +18,15 @@ export function Intro() {
   return (
     <div className="fixed inset-0 grid place-items-center bg-[#140f0c]/55 backdrop-blur-[2px]">
       <div className="panel w-[min(92vw,420px)] p-6 text-center rise">
-        <div className="mb-1 flex items-center justify-center gap-2 text-3xl font-bold tracking-wide text-ink">
+        <div className="mb-1 flex items-center justify-center gap-2 text-3xl font-medium tracking-wide text-ink">
           <Disc3 className="text-warm" /> vynl
         </div>
         <p className="mb-5 text-sm text-ink-soft">Sua coleção de discos, num quarto para ouvir música.</p>
         <div className="mb-5 grid grid-cols-2 gap-x-4 gap-y-1.5 text-left text-sm">
-          <span className="font-semibold">WASD / setas</span><span>andar</span>
-          <span className="font-semibold">Mouse</span><span>olhar ao redor</span>
-          <span className="font-semibold">E ou clique</span><span>interagir</span>
-          <span className="font-semibold">Esc</span><span>soltar o mouse / fechar</span>
+          <span className="font-normal">WASD / setas</span><span>andar</span>
+          <span className="font-normal">Mouse</span><span>olhar ao redor</span>
+          <span className="font-normal">E ou clique</span><span>interagir</span>
+          <span className="font-normal">Esc</span><span>soltar o mouse / fechar</span>
         </div>
         <div className="mb-5 flex justify-center gap-1 rounded-lg bg-black/5 p-1 text-sm">
           {(['fps', 'accessible'] as const).map((m) => (

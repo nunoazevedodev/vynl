@@ -76,7 +76,7 @@ export function DiscogsSearch({ onImport, initialQuery = '' }: { onImport: (d: D
                     <span className="h-10 w-10 shrink-0 rounded-sm bg-black/10" />
                   )}
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold">{rest.join(' - ') || r.title}</span>
+                    <span className="block truncate text-sm font-normal">{rest.join(' - ') || r.title}</span>
                     <span className="block truncate text-xs text-ink-soft">
                       {artist}
                       {r.year ? ` · ${r.year}` : ''}
@@ -101,7 +101,7 @@ function TokenSetup() {
   const [value, setValue] = useState('')
   return (
     <div className="rounded-md border border-dashed border-[#cdbb98] bg-[#fffaf0] p-3 text-sm">
-      <div className="mb-1 flex items-center gap-1.5 font-semibold">
+      <div className="mb-1 flex items-center gap-1.5 font-normal">
         <KeyRound size={14} /> Conectar ao Discogs
       </div>
       <p className="mb-2 text-xs text-ink-soft">

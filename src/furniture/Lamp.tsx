@@ -1,28 +1,36 @@
 import { useFrame } from '@react-three/fiber'
 import { useEffect, useRef } from 'react'
-import { DoubleSide, type Mesh, type MeshLambertMaterial, type PointLight } from 'three'
+import { DoubleSide, type Mesh, type MeshLambertMaterial, type Object3D, type SpotLight } from 'three'
 import { registerInteractable } from '../scene/interaction'
 import { sampleEnv } from '../scene/timeOfDay'
 import { useAppStore } from '../store/useAppStore'
 
 /** Abajur decorativo. A luz fica mais presente ao anoitecer. */
-export function Lamp({ position, quality }: { position: [number, number, number]; quality: 'high' | 'low' }) {
+/**
+ * Luminária articulada. A luz é um spot apontado para a radiola e o expositor
+ * (aimAt, relativo à base), para não iluminar a janela.
+ */
+export function Lamp({ position, quality, aimAt }: { position: [number, number, number]; quality: 'high' | 'low'; aimAt: [number, number, number] }) {
   const shade = useRef<Mesh>(null)
-  const light = useRef<PointLight>(null)
+  const light = useRef<SpotLight>(null)
+  const target = useRef<Object3D>(null)
   useEffect(() => registerInteractable(shade.current, { kind: 'lamp' }), [])
+  useEffect(() => {
+    if (light.current && target.current) light.current.target = target.current
+  })
 
   useFrame(() => {
     const on = useAppStore.getState().settings.lampOn
     const night = sampleEnv().night
     const k = on ? 0.35 + night * 0.65 : 0
-    if (light.current) light.current.intensity = k * 1.9
+    if (light.current) light.current.intensity = k * 5.5
     if (shade.current) (shade.current.material as MeshLambertMaterial).emissiveIntensity = on ? 0.1 + night * 0.25 : 0
   })
 
   // Luminária articulada vermelha (como na referência)
   const red = '#a83a2c'
   return (
-    <group position={position} rotation-y={-0.5}>
+    <group position={position}>
       <mesh position={[0, 0.02, 0]}>
         <cylinderGeometry args={[0.075, 0.085, 0.04, 12]} />
         <meshLambertMaterial color={red} />
@@ -49,7 +57,10 @@ export function Lamp({ position, quality }: { position: [number, number, number]
           <meshBasicMaterial color="#fff1c8" />
         </mesh>
       </group>
-      {quality === 'high' && <pointLight ref={light} position={[-0.2, 0.32, 0]} color="#ffb76a" distance={3.5} decay={1.4} intensity={1} />}
+      <object3D ref={target} position={aimAt} />
+      {quality === 'high' && (
+        <spotLight ref={light} position={[-0.17, 0.42, 0]} color="#ffb76a" angle={0.5} penumbra={0.8} distance={2.4} decay={1.2} intensity={1} />
+      )}
     </group>
   )
 }
