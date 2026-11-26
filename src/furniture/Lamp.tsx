@@ -59,7 +59,7 @@ export function Lamp({ position, quality, aimAt }: { position: [number, number, 
       </group>
       <object3D ref={target} position={aimAt} />
       {quality === 'high' && (
-        <spotLight ref={light} position={[-0.17, 0.42, 0]} color="#ffb347" angle={0.48} penumbra={0.7} distance={2.4} decay={1.2} intensity={1} />
+        <spotLight ref={light} position={[-0.17, 0.42, 0]} color="#ffb347" angle={0.5} penumbra={0.7} distance={2.8} decay={1.2} intensity={1} />
       )}
     </group>
   )

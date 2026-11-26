@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react'
 import type { Group } from 'three'
 import { CHAIR } from '../scene/layout'
 import { registerInteractable } from '../scene/interaction'
-import { checkerTexture, fabricTexture } from '../scene/textures'
+import { fabricTexture } from '../scene/textures'
 
 const TINT = '#d8d8d0' // escurece levemente a textura verde-oliva
 
@@ -46,15 +46,6 @@ export function Armchair() {
             </mesh>
           </group>
         ))}
-      </group>
-      {/* Manta xadrez caída sobre o canto do encosto */}
-      <group position={[0.2, 0.74, -0.3]} rotation={[-0.12, 0, -0.08]}>
-        <RoundedBox args={[0.36, 0.035, 0.24]} radius={0.015} smoothness={2} position={[0, 0.28, -0.01]}>
-          <meshLambertMaterial map={checkerTexture()} />
-        </RoundedBox>
-        <RoundedBox args={[0.36, 0.6, 0.03]} radius={0.012} smoothness={2} position={[0, -0.02, 0.12]}>
-          <meshLambertMaterial map={checkerTexture()} />
-        </RoundedBox>
       </group>
       {/* Pés curtos de madeira escura */}
       {[-1, 1].flatMap((sx) =>

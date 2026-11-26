@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 import { useAppStore } from '../store/useAppStore'
+import { cameraState } from '../scene/interaction'
+import { SPEAKER } from '../scene/layout'
 import { getToken, handleRedirect, isLoggedIn } from './spotifyAuth'
 
 /**
@@ -166,6 +168,9 @@ async function playRecord(recordId: string) {
     }
     useSpotify.setState({ albumNotFound: undefined })
     await api(`/me/player/play?device_id=${deviceId}`, { method: 'PUT', body: JSON.stringify({ context_uri: album.uri }) })
+    // Repete o mesmo disco até você trocar (não pula para outros álbuns).
+    await api(`/me/player/repeat?state=context&device_id=${deviceId}`, { method: 'PUT' }).catch(() => {})
+    await api(`/me/player/shuffle?state=false&device_id=${deviceId}`, { method: 'PUT' }).catch(() => {})
   } catch (e) {
     useAppStore.getState().showToast((e as Error).message)
   }
@@ -188,6 +193,26 @@ useAppStore.subscribe((s, prev) => {
   }
 })
 
+/**
+ * Volume pela distância até a caixa de som: perto dela o som cresce um pouco,
+ * longe diminui um pouco (nunca fica baixo demais). O volume do controle é o "máximo".
+ */
+let appliedVolume = -1
+export function proximityFactor() {
+  const p = cameraState.pos
+  const d = Math.hypot(p.x - SPEAKER.x, p.z - SPEAKER.z)
+  const k = Math.min(1, Math.max(0, (d - 0.8) / 4.2)) // 0 perto … 1 longe
+  return 1 - k * 0.4 // 100% perto, 60% no fundo do quarto
+}
+setInterval(() => {
+  if (!player || useSpotify.getState().status !== 'ready') return
+  const v = Math.round(useSpotify.getState().volume * proximityFactor() * 100) / 100
+  if (Math.abs(v - appliedVolume) >= 0.02) {
+    appliedVolume = v
+    void player.setVolume(v)
+  }
+}, 200)
+
 export const spotifyControls = {
   toggle: () => {
     const st = useAppStore.getState()
@@ -198,7 +223,7 @@ export const spotifyControls = {
   seek: (ms: number) => void player?.seek(ms),
   setVolume: (v: number) => {
     useSpotify.setState({ volume: v })
-    void player?.setVolume(v)
+    appliedVolume = -1 // reaplica já com o fator de distância
     useAppStore.getState().updateSettings({ volume: v })
   },
 }

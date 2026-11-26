@@ -45,11 +45,21 @@ export type HoverInfo =
   | { kind: 'emptySlot'; location: RecordLocation; label: string }
   | { kind: 'player' | 'display' | 'lamp' | 'chair' | 'switch'; label: string }
 
+export interface WishItem {
+  discogsId: number
+  title: string
+  artist: string
+  year?: string
+  thumb?: string
+  addedAt: number
+}
+
 export type Panel =
   | { type: 'details'; id: string }
   | { type: 'form'; id?: string; location?: RecordLocation }
   | { type: 'settings' }
   | { type: 'collection' }
+  | { type: 'wishlist' }
   | null
 
 export interface PlayerState {
@@ -60,6 +70,7 @@ export interface PlayerState {
 interface AppState {
   loaded: boolean
   records: Record<string, VinylRecord>
+  wishlist: WishItem[]
   slotIndex: Map<string, string>
   settings: Settings
   player: PlayerState
@@ -75,6 +86,8 @@ interface AppState {
 
   init(): Promise<void>
   saveRecord(r: VinylRecord): void
+  addWish(w: WishItem): void
+  removeWish(discogsId: number): void
   deleteRecord(id: string): void
   clearDemo(): void
   setPanel(p: Panel): void
@@ -114,9 +127,10 @@ async function loadInitial(set: (p: Partial<AppState>) => void) {
     }
     const settings = { ...DEFAULT_SETTINGS, ...((await repository.getValue<Partial<Settings>>('settings')) ?? {}), lampOn: true }
     const player = (await repository.getValue<PlayerState>('player')) ?? { recordId: null, playing: false }
+    const wishlist = (await repository.getValue<WishItem[]>('wishlist')) ?? []
     const records = Object.fromEntries(list.map((r) => [r.id, r]))
     if (player.recordId && !records[player.recordId]) player.recordId = null
-    set({ records, slotIndex: buildSlotIndex(records), settings, player: { ...player, playing: false }, loaded: true })
+    set({ records, wishlist, slotIndex: buildSlotIndex(records), settings, player: { ...player, playing: false }, loaded: true })
     void backfillCovers()
   } catch (e) {
     console.warn('[vynl] IndexedDB indisponível, usando memória', e)
@@ -133,6 +147,7 @@ const persist = (p: Promise<unknown>) =>
 export const useAppStore = create<AppState>((set, get) => ({
   loaded: false,
   records: {},
+  wishlist: [],
   slotIndex: new Map(),
   settings: DEFAULT_SETTINGS,
   player: { recordId: null, playing: false },
@@ -153,6 +168,18 @@ export const useAppStore = create<AppState>((set, get) => ({
     const records = { ...get().records, [r.id]: { ...r, updatedAt: Date.now() } }
     set({ records, slotIndex: buildSlotIndex(records) })
     persist(repository.putRecord(records[r.id]))
+  },
+
+  addWish(w) {
+    if (get().wishlist.some((x) => x.discogsId === w.discogsId)) return get().showToast('Já está na lista de desejos.')
+    const wishlist = [w, ...get().wishlist]
+    set({ wishlist })
+    persist(repository.setValue('wishlist', wishlist))
+  },
+  removeWish(discogsId) {
+    const wishlist = get().wishlist.filter((x) => x.discogsId !== discogsId)
+    set({ wishlist })
+    persist(repository.setValue('wishlist', wishlist))
   },
 
   deleteRecord(id) {

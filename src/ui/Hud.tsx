@@ -1,4 +1,4 @@
-import { Library, Plus, Settings2 } from 'lucide-react'
+import { Heart, Library, Settings2 } from 'lucide-react'
 import { useAppStore } from '../store/useAppStore'
 import { InteractionHint } from './InteractionHint'
 
@@ -33,8 +33,8 @@ export function Hud() {
           <IconButton label="Coleção" onClick={() => setPanel({ type: 'collection' })}>
             <Library size={16} />
           </IconButton>
-          <IconButton label="Adicionar disco" onClick={() => setPanel({ type: 'form' })}>
-            <Plus size={16} />
+          <IconButton label="Lista de desejos" onClick={() => setPanel({ type: 'wishlist' })}>
+            <Heart size={16} />
           </IconButton>
           <IconButton label="Configurações" onClick={() => setPanel({ type: 'settings' })}>
             <Settings2 size={16} />

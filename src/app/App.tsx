@@ -10,6 +10,7 @@ import { Hud } from '../ui/Hud'
 import { Intro } from '../ui/Intro'
 import { SettingsPanel } from '../ui/SettingsPanel'
 import { Toast } from '../ui/Toast'
+import { WishlistPanel } from '../ui/WishlistPanel'
 import { Ps2Overlay } from '../ui/Ps2Overlay'
 
 export default function App() {
@@ -29,6 +30,7 @@ export default function App() {
       {panel?.type === 'form' && <RecordForm key={panel.id ?? 'new'} id={panel.id} location={panel.location} />}
       {panel?.type === 'settings' && <SettingsPanel />}
       {panel?.type === 'collection' && <CollectionPanel />}
+      {panel?.type === 'wishlist' && <WishlistPanel />}
       <NowPlayingBar />
       <Toast />
       <Intro />

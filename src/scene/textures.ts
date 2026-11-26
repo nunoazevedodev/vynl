@@ -226,3 +226,12 @@ export const checkerTexture = () =>
       }
     noise(g, w, h, 14, 21)
   }, [1, 1], true)
+
+/** Grade metálica do alto-falante (furinhos). */
+export const grilleTexture = () =>
+  make('grille', [64, 64], (g, w, h) => {
+    g.fillStyle = '#26262a'
+    g.fillRect(0, 0, w, h)
+    g.fillStyle = '#0c0c0e'
+    for (let y = 1; y < h; y += 3) for (let x = (y % 2) + 1; x < w; x += 3) g.fillRect(x, y, 1.5, 1.5)
+  }, [4, 4], true)

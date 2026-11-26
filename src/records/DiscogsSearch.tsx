@@ -4,7 +4,18 @@ import { DiscogsError, getRelease, searchAlbums, type DiscogsImport, type Discog
 import { useAppStore } from '../store/useAppStore'
 
 /** Busca de álbuns no Discogs enquanto o usuário digita. */
-export function DiscogsSearch({ onImport, initialQuery = '' }: { onImport: (d: DiscogsImport) => void; initialQuery?: string }) {
+export function DiscogsSearch({
+  onImport,
+  onPickResult,
+  initialQuery = '',
+  placeholder = 'Buscar no Discogs: nome do álbum ou artista…',
+}: {
+  onImport?: (d: DiscogsImport) => void
+  /** Se definido, usa o resultado da busca direto (sem baixar o release completo). */
+  onPickResult?: (r: DiscogsSearchResult) => void
+  initialQuery?: string
+  placeholder?: string
+}) {
   const token = useAppStore((s) => s.settings.discogsToken)
   const [q, setQ] = useState(initialQuery)
   const [results, setResults] = useState<DiscogsSearchResult[]>([])
@@ -33,6 +44,13 @@ export function DiscogsSearch({ onImport, initialQuery = '' }: { onImport: (d: D
   }, [q, token])
 
   const pick = async (r: DiscogsSearchResult) => {
+    if (onPickResult) {
+      onPickResult(r)
+      setResults([])
+      setQ('')
+      return
+    }
+    if (!onImport) return
     setStatus('importing')
     try {
       onImport(await getRelease(r.id, token))
@@ -54,7 +72,7 @@ export function DiscogsSearch({ onImport, initialQuery = '' }: { onImport: (d: D
         <Search size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-ink-soft" />
         <input
           className="field border-0 bg-transparent pl-7 focus:border-0"
-          placeholder="Buscar no Discogs: nome do álbum ou artista…"
+          placeholder={placeholder}
           value={q}
           onChange={(e) => setQ(e.target.value)}
           autoFocus
