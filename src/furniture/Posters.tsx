@@ -20,7 +20,7 @@ function usePosterTexture(file: string, variant: number) {
   useEffect(() => {
     let alive = true
     loader.load(
-      `/posters/${file}`,
+      `${import.meta.env.BASE_URL}posters/${file}`,
       (t) => {
         t.colorSpace = SRGBColorSpace
         t.anisotropy = 4
