@@ -7,6 +7,7 @@ import { ChristmasTree } from '../furniture/ChristmasTree'
 import { WallShelf } from '../furniture/Decor'
 import { Cabinet } from '../furniture/Cabinet'
 import { MusicCorner } from '../furniture/MusicCorner'
+import { Guitars } from '../furniture/Guitars'
 import { Posters } from '../furniture/Posters'
 import { RightCorner } from '../furniture/RightCorner'
 import { VinylShelf } from '../furniture/VinylShelf'
@@ -59,6 +60,7 @@ export function Experience() {
       <Armchair />
       <MusicCorner quality={quality} />
       <RightCorner />
+      <Guitars />
       <ChristmasTree position={[XMAS_TREE[0], 0, XMAS_TREE[1]]} quality={quality} />
       <Posters />
       <WallShelf position={[-HALF_W, 1.95, 0.55]} rotationY={Math.PI / 2} />
