@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { useAppStore } from '../store/useAppStore'
 import { registerInteractable } from './interaction'
+import { floorHex, wallHex } from './roomStyle'
 import { DoubleSide, Object3D, type InstancedMesh, type Mesh } from 'three'
 import { HALF_L, HALF_W, ROOM, WINDOW } from './layout'
 import { ceilingTexture, floorTexture, rugTexture, wallTexture, woodTexture } from './textures'
@@ -10,6 +11,8 @@ const H = ROOM.height
 /** Paredes, piso, teto, janela, porta e rodapés. */
 export function Room() {
   const wall = wallTexture()
+  const wallTint = useAppStore((s) => wallHex(s.settings.wallColor))
+  const floorTint = useAppStore((s) => floorHex(s.settings.floorColor))
   const floor = floorTexture()
   const ceiling = ceilingTexture()
 
@@ -34,7 +37,7 @@ export function Room() {
       {/* Piso */}
       <mesh rotation-x={-Math.PI / 2} position={[0, 0, 0]}>
         <planeGeometry args={[ROOM.width, ROOM.length]} />
-        <meshLambertMaterial map={floor} />
+        <meshLambertMaterial map={floor} color={floorTint} />
       </mesh>
       {/* Tapete */}
       <mesh rotation-x={-Math.PI / 2} position={[0, 0.006, -0.45]}>
@@ -51,22 +54,22 @@ export function Room() {
       {/* Paredes longas */}
       <mesh position={[-HALF_W, H / 2, 0]} rotation-y={Math.PI / 2}>
         <planeGeometry args={[ROOM.length, H]} />
-        <meshLambertMaterial map={wall} />
+        <meshLambertMaterial map={wall} color={wallTint} />
       </mesh>
       <mesh position={[HALF_W, H / 2, 0]} rotation-y={-Math.PI / 2}>
         <planeGeometry args={[ROOM.length, H]} />
-        <meshLambertMaterial map={wall} />
+        <meshLambertMaterial map={wall} color={wallTint} />
       </mesh>
       {/* Parede da entrada */}
       <mesh position={[0, H / 2, HALF_L]} rotation-y={Math.PI}>
         <planeGeometry args={[ROOM.width, H]} />
-        <meshLambertMaterial map={wall} />
+        <meshLambertMaterial map={wall} color={wallTint} />
       </mesh>
       {/* Parede da janela */}
       {windowWall.map((p, i) => (
         <mesh key={i} position={[p.x, p.y, -HALF_L]}>
           <planeGeometry args={[p.w, p.h]} />
-          <meshLambertMaterial map={wall} />
+          <meshLambertMaterial map={wall} color={wallTint} />
         </mesh>
       ))}
       {/* Espessura da parede na abertura */}

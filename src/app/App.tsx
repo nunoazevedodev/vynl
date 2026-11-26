@@ -11,6 +11,7 @@ import { Intro } from '../ui/Intro'
 import { SettingsPanel } from '../ui/SettingsPanel'
 import { Toast } from '../ui/Toast'
 import { WishlistPanel } from '../ui/WishlistPanel'
+import { RoomPanel } from '../ui/RoomPanel'
 import { Ps2Overlay } from '../ui/Ps2Overlay'
 
 export default function App() {
@@ -31,6 +32,7 @@ export default function App() {
       {panel?.type === 'settings' && <SettingsPanel />}
       {panel?.type === 'collection' && <CollectionPanel />}
       {panel?.type === 'wishlist' && <WishlistPanel />}
+      {panel?.type === 'room' && <RoomPanel />}
       <NowPlayingBar />
       <Toast />
       <Intro />

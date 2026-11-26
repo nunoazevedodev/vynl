@@ -36,8 +36,11 @@ export function Hud() {
           <IconButton label="Lista de desejos" onClick={() => setPanel({ type: 'wishlist' })}>
             <PixelIcon name="heart" />
           </IconButton>
-          <IconButton label="Configurações" onClick={() => setPanel({ type: 'settings' })}>
+          <IconButton label="Personalizar quarto" onClick={() => setPanel({ type: 'room' })}>
             <PixelIcon name="settings" />
+          </IconButton>
+          <IconButton label="Configurações" onClick={() => setPanel({ type: 'settings' })}>
+            <PixelIcon name="gear" />
           </IconButton>
         </div>
       )}

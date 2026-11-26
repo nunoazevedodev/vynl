@@ -23,6 +23,9 @@ export interface Settings {
   /** Client ID do app no Spotify for Developers (para tocar via Spotify). */
   spotifyClientId: string
   volume: number
+  /** Personalização do quarto */
+  wallColor: string
+  floorColor: string
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -38,6 +41,8 @@ export const DEFAULT_SETTINGS: Settings = {
   discogsToken: '',
   spotifyClientId: '',
   volume: 0.6,
+  wallColor: 'off',
+  floorColor: 'natural',
 }
 
 export type HoverInfo =
@@ -60,6 +65,7 @@ export type Panel =
   | { type: 'settings' }
   | { type: 'collection' }
   | { type: 'wishlist' }
+  | { type: 'room' }
   | null
 
 export interface PlayerState {
