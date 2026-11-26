@@ -11,12 +11,13 @@ import { HALF_W } from '../scene/layout'
 export function Guitars() {
   return (
     <group position={[HALF_W, 0, 0]} rotation-y={-Math.PI / 2}>
-      <WallHanger x={1.92} y={2.1} />
-      <group position={[1.92, 2.1 - 0.98, 0.07]} rotation-z={0.02}>
+      {/* Pendurados lado a lado pela mão, como na referência */}
+      <WallHanger x={2.0} y={2.2} />
+      <group position={[2.0, 2.2 - 1.0, 0.07]}>
         <ElectricGuitar />
       </group>
-      <WallHanger x={2.62} y={2.12} />
-      <group position={[2.62, 2.12 - 1.0, 0.09]} rotation-z={-0.02}>
+      <WallHanger x={2.5} y={2.2} />
+      <group position={[2.5, 2.2 - 1.0, 0.09]}>
         <ClassicalGuitar />
       </group>
     </group>
@@ -88,29 +89,45 @@ function ElectricGuitar() {
     const pos = body.attributes.position
     const uv = body.attributes.uv
     for (let i = 0; i < pos.count; i++) uv.setXY(i, pos.getX(i) / 0.36 + 0.5, pos.getY(i) / 0.5 + 0.5)
+    // Escudo grande no estilo Strat: sobe até o chifre e desce contornando o corpo
     const g = new Shape()
-    g.moveTo(0.02, 0.1)
-    g.bezierCurveTo(0.09, 0.1, 0.1, 0.0, 0.11, -0.06)
-    g.bezierCurveTo(0.12, -0.16, 0.06, -0.19, 0.0, -0.17)
-    g.lineTo(-0.06, -0.12)
-    g.bezierCurveTo(-0.1, -0.02, -0.06, 0.08, 0.02, 0.1)
+    g.moveTo(-0.03, 0.12)
+    g.lineTo(0.035, 0.12)
+    g.bezierCurveTo(0.06, 0.14, 0.075, 0.17, 0.09, 0.165)
+    g.bezierCurveTo(0.11, 0.15, 0.1, 0.06, 0.12, 0.0)
+    g.bezierCurveTo(0.14, -0.08, 0.13, -0.17, 0.06, -0.19)
+    g.bezierCurveTo(0.02, -0.2, -0.02, -0.17, -0.05, -0.14)
+    g.bezierCurveTo(-0.1, -0.08, -0.1, 0.0, -0.08, 0.06)
+    g.bezierCurveTo(-0.07, 0.1, -0.05, 0.12, -0.03, 0.12)
     const guard = new ExtrudeGeometry(g, { depth: 0.003, bevelEnabled: false, curveSegments: 8 })
     return { body, guard, tex: sunburst() }
   }, [])
   return (
-    <group position={[0, 0.24, 0]}>
+    <group position={[0, 0.27, 0]} scale={1.12}>
       <mesh geometry={body}>
         <meshLambertMaterial map={tex} />
       </mesh>
-      <mesh geometry={guard} position={[0, 0, 0.0275]}>
-        <meshLambertMaterial color="#f4f0e6" />
+      {/* Escudo branco grande, com borda escura */}
+      <mesh geometry={guard} position={[0, 0, 0.0272]} scale={[1.06, 1.05, 1]}>
+        <meshLambertMaterial color="#2a2420" />
+      </mesh>
+      <mesh geometry={guard} position={[0, 0, 0.0285]}>
+        <meshLambertMaterial color="#f4f2ea" />
       </mesh>
       {/* Captadores */}
       {[0.02, -0.04, -0.1].map((y, i) => (
-        <mesh key={y} position={[0.01, y, 0.033]} rotation-z={i === 2 ? 0.15 : 0}>
-          <boxGeometry args={[0.075, 0.018, 0.006]} />
-          <meshLambertMaterial color="#f8f6f0" />
-        </mesh>
+        <group key={y} position={[0.005, y, 0.034]} rotation-z={i === 2 ? 0.15 : 0}>
+          <mesh>
+            <boxGeometry args={[0.078, 0.02, 0.006]} />
+            <meshLambertMaterial color="#e8e4d8" />
+          </mesh>
+          {Array.from({ length: 6 }, (_, k) => (
+            <mesh key={k} position={[-0.025 + k * 0.01, 0, 0.0035]}>
+              <boxGeometry args={[0.004, 0.004, 0.002]} />
+              <meshBasicMaterial color="#555" />
+            </mesh>
+          ))}
+        </group>
       ))}
       {/* Ponte e botões */}
       <mesh position={[0.005, -0.15, 0.03]}>
@@ -124,21 +141,27 @@ function ElectricGuitar() {
         </mesh>
       ))}
       {/* Braço e escala */}
-      <mesh position={[0, 0.32, 0.005]}>
-        <boxGeometry args={[0.05, 0.48, 0.022]} />
+      <mesh position={[0, 0.37, 0.005]}>
+        <boxGeometry args={[0.048, 0.56, 0.022]} />
         <meshLambertMaterial color="#d8a868" />
       </mesh>
-      <mesh position={[0, 0.32, 0.017]}>
-        <boxGeometry args={[0.046, 0.48, 0.004]} />
-        <meshLambertMaterial color="#e0b478" />
+      <mesh position={[0, 0.37, 0.017]}>
+        <boxGeometry args={[0.044, 0.56, 0.004]} />
+        <meshLambertMaterial color="#e6be84" />
       </mesh>
+      {[0.2, 0.28, 0.36, 0.44, 0.56].map((y) => (
+        <mesh key={y} position={[0, y, 0.0195]}>
+          <circleGeometry args={[0.004, 6]} />
+          <meshBasicMaterial color="#2a2018" />
+        </mesh>
+      ))}
       {/* Mão com tarraxas de um lado só */}
-      <mesh position={[0.015, 0.62, 0.002]} rotation-z={-0.12}>
+      <mesh position={[0.015, 0.73, 0.002]} rotation-z={-0.12}>
         <boxGeometry args={[0.075, 0.17, 0.016]} />
         <meshLambertMaterial color="#d8a868" />
       </mesh>
       {Array.from({ length: 6 }, (_, i) => (
-        <mesh key={i} position={[0.05, 0.56 + i * 0.024, 0.014]} rotation-z={Math.PI / 2}>
+        <mesh key={i} position={[0.05, 0.67 + i * 0.024, 0.014]} rotation-z={Math.PI / 2}>
           <cylinderGeometry args={[0.005, 0.005, 0.02, 5]} />
           <meshLambertMaterial color="#c8c8cc" />
         </mesh>
