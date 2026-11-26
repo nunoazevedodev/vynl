@@ -1,14 +1,17 @@
+import { useFrame } from '@react-three/fiber'
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
-import { BoxGeometry, InstancedBufferAttribute, MeshLambertMaterial, Object3D, type InstancedMesh, type Mesh } from 'three'
+import { BoxGeometry, Color, InstancedBufferAttribute, MeshLambertMaterial, Object3D, type InstancedMesh, type Mesh } from 'three'
 import { CoverAtlas, TILE_SCALE, tileOffset } from '../records/coverAtlas'
 import { ROWS_PER_SHELF, SLOTS_PER_ROW } from '../records/RecordModel'
 import { RECORD_THICK, SHELF, SLOT_SPAN, recordZ, slotX, type ShelfPlacement } from '../scene/layout'
 import { registerInteractable } from '../scene/interaction'
 import { woodTexture } from '../scene/textures'
+import { sampleEnv } from '../scene/timeOfDay'
 import { useAppStore } from '../store/useAppStore'
 import { DecorRow } from './Decor'
 
 const CAPACITY = ROWS_PER_SHELF * SLOTS_PER_ROW
+const WARM = new Color('#ffc27a')
 
 /**
  * Móvel de vinis: 3 prateleiras, discos num único InstancedMesh (1 draw call)
@@ -69,9 +72,9 @@ function ShelfRecords({ shelf }: { shelf: number }) {
     for (let i = 0; i < CAPACITY; i++) tiles.set(tileOffset(i), i * 2)
     geometry.setAttribute('aTile', new InstancedBufferAttribute(tiles, 2))
     const atlas = new CoverAtlas()
-    // Um pouco de brilho próprio (emissive com a própria capa) para as capas não
-    // ficarem escuras/azuladas dentro das prateleiras à noite.
-    const material = new MeshLambertMaterial({ map: atlas.texture, emissive: '#ffffff', emissiveMap: atlas.texture, emissiveIntensity: 0.42 })
+    // Brilho próprio leve com a própria capa, tingido pela luz do ambiente (ver useFrame):
+    // as capas ganham destaque sem ficarem escuras/azuladas, mas acompanham o clima da cena.
+    const material = new MeshLambertMaterial({ map: atlas.texture, emissive: '#ffffff', emissiveMap: atlas.texture, emissiveIntensity: 0.2 })
     material.onBeforeCompile = (sh) => {
       sh.vertexShader = sh.vertexShader
         .replace('#include <common>', '#include <common>\nattribute vec2 aTile;')
@@ -82,6 +85,15 @@ function ShelfRecords({ shelf }: { shelf: number }) {
     }
     return { geometry, material, atlas }
   }, [])
+  const matRef = useRef(material)
+  useFrame(() => {
+    const m = matRef.current
+    const env = sampleEnv()
+    const ceilingOn = useAppStore.getState().settings.ceilingOn
+    // À noite puxa para o amarelo quente das lâmpadas; de dia, a cor do céu/ambiente.
+    m.emissive.copy(env.hemiSky).lerp(WARM, Math.min(1, env.night * 0.85))
+    m.emissiveIntensity = 0.1 + env.night * (ceilingOn ? 0.14 : 0.07)
+  })
   useEffect(() => () => {
     geometry.dispose()
     material.dispose()
