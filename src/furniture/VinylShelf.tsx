@@ -69,13 +69,15 @@ function ShelfRecords({ shelf }: { shelf: number }) {
     for (let i = 0; i < CAPACITY; i++) tiles.set(tileOffset(i), i * 2)
     geometry.setAttribute('aTile', new InstancedBufferAttribute(tiles, 2))
     const atlas = new CoverAtlas()
-    const material = new MeshLambertMaterial({ map: atlas.texture })
+    // Um pouco de brilho próprio (emissive com a própria capa) para as capas não
+    // ficarem escuras/azuladas dentro das prateleiras à noite.
+    const material = new MeshLambertMaterial({ map: atlas.texture, emissive: '#ffffff', emissiveMap: atlas.texture, emissiveIntensity: 0.42 })
     material.onBeforeCompile = (sh) => {
       sh.vertexShader = sh.vertexShader
         .replace('#include <common>', '#include <common>\nattribute vec2 aTile;')
         .replace(
           '#include <uv_vertex>',
-          `#include <uv_vertex>\n#ifdef USE_MAP\nvMapUv = uv * vec2(${TILE_SCALE[0].toFixed(6)}, ${TILE_SCALE[1].toFixed(6)}) + aTile;\n#endif`,
+          `#include <uv_vertex>\n#ifdef USE_MAP\nvMapUv = uv * vec2(${TILE_SCALE[0].toFixed(6)}, ${TILE_SCALE[1].toFixed(6)}) + aTile;\n#endif\n#ifdef USE_EMISSIVEMAP\nvEmissiveMapUv = vMapUv;\n#endif`,
         )
     }
     return { geometry, material, atlas }
