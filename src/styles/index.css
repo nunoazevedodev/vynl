@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@theme {
+  --font-ui: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  --color-paper: #f4ecdc;
+  --color-paper-dark: #e6dac2;
+  --color-ink: #3a3128;
+  --color-ink-soft: #6f6253;
+  --color-accent: #2f5d4e;
+  --color-warm: #c8693c;
+}
+
+html, body, #root {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #1b1714;
+  font-family: var(--font-ui);
+  color: var(--color-ink);
+  user-select: none;
+}
+
+input, textarea, select { user-select: text; }
+
+.vignette {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(20, 12, 6, 0.38) 100%);
+}
+
+.panel {
+  background: linear-gradient(180deg, #f7f0e2 0%, #eee3cd 100%);
+  border: 2px solid #d9c9a8;
+  box-shadow: 0 0 0 1px #8a7558 inset, 0 18px 40px rgba(0, 0, 0, 0.35);
+  border-radius: 10px;
+}
+
+@utility field {
+  @apply w-full rounded-md border border-[#cdbb98] bg-[#fffaf0] px-2 py-1 text-sm text-ink outline-none focus:border-accent;
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-semibold transition-colors disabled:opacity-40;
+}
+@utility btn-primary { @apply btn bg-accent text-[#f4ecdc] hover:bg-[#244a3e]; }
+@utility btn-ghost { @apply btn text-ink-soft hover:bg-black/5; }
+@utility btn-danger { @apply btn text-[#9c3a26] hover:bg-[#9c3a26]/10; }
+
+.scroll-thin::-webkit-scrollbar { width: 6px; }
+.scroll-thin::-webkit-scrollbar-thumb { background: #cdbb98; border-radius: 3px; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: none; } }
+.rise { animation: rise 180ms ease-out; }
