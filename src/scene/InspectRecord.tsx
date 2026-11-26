@@ -66,7 +66,8 @@ function Sleeve({ record }: { record: VinylRecord }) {
     const cover = coverTexture(record)
     const paper = new MeshLambertMaterial({ color: '#e9e1d2', depthTest: false })
     const front = new MeshLambertMaterial({ map: cover, emissive: '#ffffff', emissiveMap: cover, emissiveIntensity: 0.35, depthTest: false })
-    return [paper, paper, paper, paper, front, paper]
+    // Frente e verso com a capa (sem "parte de trás" lisa ao inspecionar)
+    return [paper, paper, paper, paper, front, front]
   }, [record])
   const tmpRef = useRef({ p: new Vector3(), q: new Quaternion(), endP: new Vector3(), endQ: new Quaternion(), spin: new Quaternion(), e: new Euler(), cur: { yaw: 0, pitch: 0 } })
 
