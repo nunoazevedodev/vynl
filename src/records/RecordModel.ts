@@ -41,8 +41,13 @@ export interface VinylRecord {
   notes?: string
   /** Valor pago na compra (BRL). */
   pricePaid?: number
-  /** Valor estimado atual de mercado (BRL). */
+  /** Valor estimado atual de mercado (vindo do Discogs). */
   estimatedValue?: number
+  /** Moeda do valor estimado (ex.: BRL, USD). */
+  estimatedCurrency?: string
+  /** De onde veio o valor: sugestão de preço VG+ ou menor preço à venda. */
+  estimatedSource?: 'suggestion' | 'lowest'
+  estimatedAt?: number
   /** Capa enviada pelo usuário ou baixada do Discogs (data URL JPEG redimensionada). */
   coverDataUrl?: string
   /** URL remota da capa (Discogs), usada quando não foi possível baixá-la. */
@@ -102,8 +107,14 @@ export function describeLocation(l: RecordLocation) {
   return `Estante ${l.shelf + 1} · Fileira ${l.row + 1} · Posição ${l.slot + 1}`
 }
 
-export const formatBRL = (v?: number) =>
-  v === undefined || Number.isNaN(v) ? '—' : v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+export const formatBRL = (v?: number, currency = 'BRL') => {
+  if (v === undefined || Number.isNaN(v)) return '—'
+  try {
+    return v.toLocaleString('pt-BR', { style: 'currency', currency })
+  } catch {
+    return `${currency} ${v.toFixed(2)}`
+  }
+}
 
 export const SPINE_PALETTE = [
   '#c8693c', '#2f5d4e', '#d8b45a', '#8c3b3b', '#3f5e8c', '#e3d9c6', '#4a4038', '#9a7bb0',

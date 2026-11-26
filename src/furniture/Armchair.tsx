@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import type { Group } from 'three'
 import { CHAIR } from '../scene/layout'
 import { registerInteractable } from '../scene/interaction'
-import { fabricTexture } from '../scene/textures'
+import { checkerTexture, fabricTexture } from '../scene/textures'
 
 /** Poltrona individual em verde escuro pastel. */
 export function Armchair() {
@@ -38,6 +38,17 @@ export function Armchair() {
             {mat}
           </mesh>
         ))}
+      </group>
+      {/* Manta xadrez sobre o encosto */}
+      <group position={[0.18, 0.72, -0.3]} rotation-x={-0.12}>
+        <mesh position={[0, 0.27, 0]}>
+          <boxGeometry args={[0.42, 0.03, 0.2]} />
+          <meshLambertMaterial map={checkerTexture()} />
+        </mesh>
+        <mesh position={[0, 0.0, 0.1]}>
+          <boxGeometry args={[0.42, 0.55, 0.025]} />
+          <meshLambertMaterial map={checkerTexture()} />
+        </mesh>
       </group>
       {/* Almofada */}
       <mesh position={[0.1, 0.52, -0.16]} rotation={[-0.25, 0.2, 0.15]}>

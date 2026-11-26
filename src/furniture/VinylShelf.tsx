@@ -1,19 +1,18 @@
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
-import { BoxGeometry, Color, Object3D, type InstancedMesh, type Mesh } from 'three'
+import { BoxGeometry, InstancedBufferAttribute, MeshLambertMaterial, Object3D, type InstancedMesh, type Mesh } from 'three'
+import { CoverAtlas, TILE_SCALE, tileOffset } from '../records/coverAtlas'
 import { ROWS_PER_SHELF, SLOTS_PER_ROW } from '../records/RecordModel'
 import { RECORD_THICK, SHELF, SLOT_SPAN, recordZ, slotX, type ShelfPlacement } from '../scene/layout'
 import { registerInteractable } from '../scene/interaction'
 import { woodTexture } from '../scene/textures'
 import { useAppStore } from '../store/useAppStore'
-import { DecorRow } from './Decor'
+import { DecorRow, SleepingCat } from './Decor'
 
 const CAPACITY = ROWS_PER_SHELF * SLOTS_PER_ROW
-// Geometria compartilhada pelas quatro estantes.
-const recordGeometry = new BoxGeometry(RECORD_THICK, SHELF.recordH, SHELF.recordD)
 
 /**
- * Uma estante: estrutura de madeira, 3 fileiras de discos em UM InstancedMesh
- * (150 instâncias = 1 draw call) e caixas invisíveis por fileira para seleção.
+ * Móvel de vinis: 3 prateleiras, discos num único InstancedMesh (1 draw call)
+ * com a capa de cada um vinda de um atlas; decoração apenas no tampo.
  */
 export function VinylShelf({ index, placement }: { index: number; placement: ShelfPlacement }) {
   return (
@@ -24,41 +23,34 @@ export function VinylShelf({ index, placement }: { index: number; placement: She
         <RowHitbox key={row} shelf={index} row={row} y={y} />
       ))}
       <SlotHighlight shelf={index} />
-      {/* Decoração variada nas prateleiras de cima e no topo */}
-      <DecorRow y={SHELF.decorY[0] + 0.012} z={SHELF.depth / 2} width={SHELF.width - 0.2} seed={index * 3 + 1} />
-      <DecorRow y={SHELF.decorY[1] + 0.012} z={SHELF.depth / 2} width={SHELF.width - 0.2} seed={index * 3 + 2} />
-      <DecorRow y={SHELF.height + 0.012} z={SHELF.depth / 2} width={SHELF.width - 0.15} seed={index * 3 + 7} dense={index % 2 === 0} />
+      <DecorRow y={SHELF.height + 0.012} z={SHELF.depth / 2} width={SHELF.width - 0.2} seed={index * 5 + 3} dense={index % 2 === 1} />
+      {index === 0 && <SleepingCat position={[0.55, SHELF.height + 0.012, SHELF.depth / 2]} rotationY={0.2} />}
     </group>
   )
 }
 
 function ShelfFrame() {
-  const wood = woodTexture('light')
+  const wood = woodTexture('dark')
   const { width: W, height: H, depth: D, side: S } = SHELF
-  const boards = [SHELF.rowY[0] - 0.03, SHELF.rowY[1] - 0.015, SHELF.rowY[2] - 0.015, ...SHELF.decorY.map((y) => y - 0.003), H - 0.015]
+  const boards = [SHELF.rowY[0] - 0.03, SHELF.rowY[1] - 0.015, SHELF.rowY[2] - 0.015, H - 0.02]
   return (
     <group>
       <mesh position={[0, H / 2, 0.01]}>
         <boxGeometry args={[W, H, 0.02]} />
-        <meshLambertMaterial map={wood} color="#d8bf9e" />
+        <meshLambertMaterial map={wood} color="#b89878" />
       </mesh>
-      {[-1, 1].map((s) => (
+      {[-1, 0, 1].map((s) => (
         <mesh key={s} position={[s * (W / 2 - S / 2), H / 2, D / 2]}>
-          <boxGeometry args={[S, H, D]} />
+          <boxGeometry args={[s === 0 ? 0.02 : S, H, D]} />
           <meshLambertMaterial map={wood} />
         </mesh>
       ))}
       {boards.map((y, i) => (
-        <mesh key={i} position={[0, y, D / 2]}>
-          <boxGeometry args={[W - S * 2, i === 0 ? 0.06 : 0.03, D]} />
+        <mesh key={i} position={[0, y, D / 2 + (i === 3 ? 0.01 : 0)]}>
+          <boxGeometry args={[i === 3 ? W + 0.04 : W - S * 2, i === 0 ? 0.06 : i === 3 ? 0.04 : 0.03, D + (i === 3 ? 0.03 : 0)]} />
           <meshLambertMaterial map={wood} />
         </mesh>
       ))}
-      {/* Rodapé da estante */}
-      <mesh position={[0, 0.03, D - 0.01]}>
-        <boxGeometry args={[W, 0.06, 0.02]} />
-        <meshLambertMaterial color="#8a6a4a" />
-      </mesh>
     </group>
   )
 }
@@ -66,39 +58,59 @@ function ShelfFrame() {
 function ShelfRecords({ shelf }: { shelf: number }) {
   const ref = useRef<InstancedMesh>(null)
   const records = useAppStore((s) => s.records)
-  const selectedId = useAppStore((s) => (s.panel?.type === 'details' ? s.panel.id : s.panel?.type === 'form' ? s.panel.id : undefined))
-
+  const selectedId = useAppStore((s) => (s.panel?.type === 'details' || s.panel?.type === 'form' ? s.panel.id : undefined))
   const mine = useMemo(() => Object.values(records).filter((r) => r.location.shelf === shelf), [records, shelf])
+
+  // Geometria própria por estante (carrega o atributo de "qual capa do atlas").
+  const { geometry, material, atlas } = useMemo(() => {
+    const geometry = new BoxGeometry(RECORD_THICK, SHELF.recordH, SHELF.recordD)
+    const tiles = new Float32Array(CAPACITY * 2)
+    for (let i = 0; i < CAPACITY; i++) tiles.set(tileOffset(i), i * 2)
+    geometry.setAttribute('aTile', new InstancedBufferAttribute(tiles, 2))
+    const atlas = new CoverAtlas()
+    const material = new MeshLambertMaterial({ map: atlas.texture })
+    material.onBeforeCompile = (sh) => {
+      sh.vertexShader = sh.vertexShader
+        .replace('#include <common>', '#include <common>\nattribute vec2 aTile;')
+        .replace(
+          '#include <uv_vertex>',
+          `#include <uv_vertex>\n#ifdef USE_MAP\nvMapUv = uv * vec2(${TILE_SCALE[0].toFixed(6)}, ${TILE_SCALE[1].toFixed(6)}) + aTile;\n#endif`,
+        )
+    }
+    return { geometry, material, atlas }
+  }, [])
+  useEffect(() => () => {
+    geometry.dispose()
+    material.dispose()
+    atlas.dispose()
+  }, [geometry, material, atlas])
 
   useLayoutEffect(() => {
     const m = ref.current
     if (!m) return
     const o = new Object3D()
-    const color = new Color()
     o.scale.set(0, 0, 0)
     o.updateMatrix()
-    for (let i = 0; i < CAPACITY; i++) m.setMatrixAt(i, o.matrix)
+    for (let i = 0; i < CAPACITY; i++) {
+      m.setMatrixAt(i, o.matrix)
+      atlas.clear(i)
+    }
     for (const r of mine) {
       const { row, slot } = r.location
       const i = row * SLOTS_PER_ROW + slot
       const jitter = ((slot * 7919 + row * 31) % 13) / 13 - 0.5
-      o.position.set(slotX(slot), SHELF.rowY[row] + SHELF.recordH / 2, recordZ + (r.id === selectedId ? 0.09 : jitter * 0.006))
+      o.position.set(slotX(slot), SHELF.rowY[row] + SHELF.recordH / 2, recordZ + (r.id === selectedId ? 0.1 : jitter * 0.006))
       o.rotation.set(0, 0, jitter * 0.012)
       o.scale.set(1, 1, 1)
       o.updateMatrix()
       m.setMatrixAt(i, o.matrix)
-      m.setColorAt(i, color.set(r.spineColor))
+      atlas.set(i, r)
     }
     m.instanceMatrix.needsUpdate = true
-    if (m.instanceColor) m.instanceColor.needsUpdate = true
     m.computeBoundingSphere()
-  }, [mine, selectedId])
+  }, [mine, selectedId, atlas])
 
-  return (
-    <instancedMesh ref={ref} args={[recordGeometry, undefined, CAPACITY]}>
-      <meshLambertMaterial color="#ffffff" />
-    </instancedMesh>
-  )
+  return <instancedMesh ref={ref} args={[geometry, material, CAPACITY]} />
 }
 
 function RowHitbox({ shelf, row, y }: { shelf: number; row: number; y: number }) {

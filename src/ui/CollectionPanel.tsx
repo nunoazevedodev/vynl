@@ -19,17 +19,15 @@ export function CollectionPanel() {
     const all = Object.values(records)
     return {
       count: all.length,
-      paid: all.reduce((s, r) => s + (r.pricePaid ?? 0), 0),
-      est: all.reduce((s, r) => s + (r.estimatedValue ?? 0), 0),
+      est: all.filter((r) => !r.estimatedCurrency || r.estimatedCurrency === 'BRL').reduce((s, r) => s + (r.estimatedValue ?? 0), 0),
     }
   }, [records])
 
   return (
     <PanelShell title="Coleção" side="left" width={360}>
-      <div className="mb-3 grid grid-cols-3 gap-2 text-center text-xs">
+      <div className="mb-3 grid grid-cols-2 gap-2 text-center text-xs">
         <Stat k="Discos" v={`${totals.count} / 600`} />
-        <Stat k="Pago" v={formatBRL(totals.paid)} />
-        <Stat k="Estimado" v={formatBRL(totals.est)} />
+        <Stat k="Valor estimado" v={formatBRL(totals.est)} />
       </div>
       <label className="relative mb-2 block">
         <Search size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-ink-soft" />

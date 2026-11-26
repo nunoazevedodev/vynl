@@ -197,3 +197,64 @@ export function DecorRow({ y, z, width, seed, dense = false }: { y: number; z: n
     </group>
   )
 }
+
+/** Prateleira de parede com livros e planta pendente (como nas referências). */
+export function WallShelf({ position, rotationY }: { position: [number, number, number]; rotationY: number }) {
+  return (
+    <group position={position} rotation-y={rotationY}>
+      <mesh position={[0, 0, 0.11]}>
+        <boxGeometry args={[0.8, 0.03, 0.22]} />
+        <meshLambertMaterial color="#7a5234" />
+      </mesh>
+      {[-0.3, 0.3].map((x) => (
+        <mesh key={x} position={[x, -0.05, 0.03]}>
+          <boxGeometry args={[0.02, 0.08, 0.06]} />
+          <meshLambertMaterial color="#3a2a20" />
+        </mesh>
+      ))}
+      <Books position={[-0.36, 0.015, 0.11]} seed={7} />
+      <Figurine position={[0.05, 0.015, 0.12]} seed={2} />
+      <group position={[0.26, 0.015, 0.11]}>
+        <TrailingPlant position={[0, 0, 0]} seed={1} />
+        {[0, 1, 2, 3, 4, 5].map((i) => (
+          <mesh key={i} position={[0.06 + (i % 2) * 0.03, -0.06 - i * 0.07, 0.09]}>
+            <icosahedronGeometry args={[0.04, 0]} />
+            <meshLambertMaterial color={i % 2 ? '#6a9a4e' : '#557d45'} flatShading />
+          </mesh>
+        ))}
+      </group>
+    </group>
+  )
+}
+
+/** Gato dormindo (personagem original, low-poly). */
+export function SleepingCat({ position, rotationY = 0, color = '#2a2630' }: { position: [number, number, number]; rotationY?: number; color?: string }) {
+  return (
+    <group position={position} rotation-y={rotationY}>
+      <mesh position={[0, 0.07, 0]} scale={[1.5, 0.75, 1]}>
+        <sphereGeometry args={[0.1, 10, 8]} />
+        <meshLambertMaterial color={color} flatShading />
+      </mesh>
+      <mesh position={[0.15, 0.08, 0.03]}>
+        <sphereGeometry args={[0.065, 10, 8]} />
+        <meshLambertMaterial color={color} flatShading />
+      </mesh>
+      {[-0.03, 0.035].map((z) => (
+        <mesh key={z} position={[0.17, 0.145, 0.03 + z]} rotation-z={-0.3}>
+          <coneGeometry args={[0.022, 0.05, 4]} />
+          <meshLambertMaterial color={color} flatShading />
+        </mesh>
+      ))}
+      <mesh position={[-0.04, 0.025, 0.1]} rotation-y={0.4} scale={[1, 0.6, 0.6]}>
+        <torusGeometry args={[0.09, 0.022, 5, 10, Math.PI]} />
+        <meshLambertMaterial color={color} flatShading />
+      </mesh>
+      {[-0.025, 0.025].map((z) => (
+        <mesh key={z} position={[0.205, 0.09, 0.06 + z * 0.9]}>
+          <boxGeometry args={[0.004, 0.003, 0.018]} />
+          <meshBasicMaterial color="#d8c8a0" />
+        </mesh>
+      ))}
+    </group>
+  )
+}

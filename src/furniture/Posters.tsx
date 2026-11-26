@@ -8,9 +8,10 @@ import { placeholderPosterTexture } from '../scene/textures'
  * os nomes abaixo; enquanto não existirem, aparece uma arte original abstrata.
  */
 const POSTERS = [
-  { file: 'dark-side-of-the-moon.jpg', position: [-HALF_W + 0.012, 1.65, 2.55], rotationY: Math.PI / 2, size: [0.62, 0.62] },
-  { file: 'wish-you-were-here.jpg', position: [HALF_W - 0.012, 1.65, 2.55], rotationY: -Math.PI / 2, size: [0.62, 0.62] },
-  { file: 'in-rainbows.jpg', position: [1.75, 1.72, -HALF_L + 0.012], rotationY: 0, size: [0.56, 0.56] },
+  // Acima dos móveis de vinil (como nas referências) e acima da poltrona.
+  { file: 'dark-side-of-the-moon.jpg', position: [-HALF_W + 0.012, 2.0, -1.42], rotationY: Math.PI / 2, size: [0.55, 0.55] },
+  { file: 'wish-you-were-here.jpg', position: [HALF_W - 0.012, 2.0, 0.55], rotationY: -Math.PI / 2, size: [0.55, 0.55] },
+  { file: 'in-rainbows.jpg', position: [1.38, 1.78, -HALF_L + 0.012], rotationY: 0, size: [0.48, 0.48] },
 ] as const
 
 const loader = new TextureLoader()

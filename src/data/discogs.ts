@@ -151,3 +151,31 @@ export function formatReleased(s?: string) {
   const date = new Date(y, m - 1, d || 1)
   return date.toLocaleDateString('pt-BR', d ? { day: 'numeric', month: 'long', year: 'numeric' } : { month: 'long', year: 'numeric' })
 }
+
+export interface EstimatedValue {
+  value: number
+  currency: string
+  source: 'suggestion' | 'lowest'
+}
+
+/**
+ * Valor estimado pelo Discogs. Tenta a sugestão de preço para VG+
+ * (exige perfil de vendedor configurado no Discogs) e, se não houver,
+ * usa o menor preço anunciado no Marketplace, em reais.
+ */
+export async function getEstimatedValue(releaseId: number, token: string): Promise<EstimatedValue | undefined> {
+  try {
+    const s = await get<Record<string, { value: number; currency: string }>>(`/marketplace/price_suggestions/${releaseId}`, {}, token)
+    const pick = s['Very Good Plus (VG+)'] ?? s['Near Mint (NM or M-)'] ?? Object.values(s)[0]
+    if (pick?.value) return { value: Math.round(pick.value * 100) / 100, currency: pick.currency, source: 'suggestion' }
+  } catch {
+    /* sem perfil de vendedor ou sem dados: tenta o menor preço */
+  }
+  try {
+    const st = await get<{ lowest_price?: { value: number; currency: string } | null }>(`/marketplace/stats/${releaseId}`, { curr_abbr: 'BRL' }, token)
+    if (st.lowest_price?.value) return { value: st.lowest_price.value, currency: st.lowest_price.currency, source: 'lowest' }
+  } catch {
+    /* sem dados de mercado */
+  }
+  return undefined
+}

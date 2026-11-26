@@ -1,280 +1,110 @@
-import { ImagePlus, ListMusic, Trash2 } from 'lucide-react'
-import { fetchImageAsDataUrl, formatReleased, type DiscogsImport } from '../data/discogs'
-import { DiscogsSearch } from './DiscogsSearch'
+import { Loader2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { fetchImageAsDataUrl, getEstimatedValue, type DiscogsImport } from '../data/discogs'
 import { isSlotFree, useAppStore } from '../store/useAppStore'
 import { PanelShell } from '../ui/PanelShell'
-import { generateCoverCanvas, resizeImageFile } from './coverArt'
-import {
-  CONDITIONS,
-  CONDITION_LABELS,
-  ROWS_PER_SHELF,
-  SHELF_COUNT,
-  SLOTS_PER_ROW,
-  SPINE_PALETTE,
-  findFreeSlot,
-  newId,
-  type Condition,
-  type RecordLocation,
-  type Track,
-  type VinylRecord,
-} from './RecordModel'
+import { DiscogsSearch } from './DiscogsSearch'
+import { ROWS_PER_SHELF, SHELF_COUNT, SLOTS_PER_ROW, SPINE_PALETTE, findFreeSlot, newId, type RecordLocation, type VinylRecord } from './RecordModel'
 
-const toNum = (s: string) => {
-  if (!s.trim()) return undefined
-  const n = Number(s.replace(/\./g, '').replace(',', '.'))
-  return Number.isFinite(n) ? n : undefined
-}
-const toStr = (n?: number) => (n === undefined ? '' : String(n).replace('.', ','))
-
-/** Cadastro e edição de disco, incluindo mudança de estante/fileira/posição. */
+/**
+ * Adicionar disco = só a busca do Discogs. Ao escolher, o disco é salvo
+ * direto na posição apontada. Com `id`, serve para mover ou trocar o disco.
+ */
 export function RecordForm({ id, location }: { id?: string; location?: RecordLocation }) {
   const existing = useAppStore((s) => (id ? s.records[id] : undefined))
   const slotIndex = useAppStore((s) => s.slotIndex)
+  const token = useAppStore((s) => s.settings.discogsToken)
   const { saveRecord, setPanel, showToast } = useAppStore.getState()
-
   const initialLoc = useMemo(
     () => existing?.location ?? location ?? findFreeSlot(slotIndex) ?? { shelf: 0, row: 0, slot: 0 },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   )
-  const [f, setF] = useState({
-    title: existing?.title ?? '',
-    artist: existing?.artist ?? '',
-    year: existing?.year ? String(existing.year) : '',
-    label: existing?.label ?? '',
-    edition: existing?.edition ?? '',
-    condition: (existing?.condition ?? '') as Condition | '',
-    pricePaid: toStr(existing?.pricePaid),
-    estimatedValue: toStr(existing?.estimatedValue),
-    notes: existing?.notes ?? '',
-    spineColor: existing?.spineColor ?? SPINE_PALETTE[(initialLoc.slot * 7 + initialLoc.row * 3 + initialLoc.shelf) % SPINE_PALETTE.length],
-    coverDataUrl: existing?.coverDataUrl,
-    coverRemoteUrl: existing?.coverRemoteUrl,
-    released: existing?.released ?? '',
-    country: existing?.country ?? '',
-  })
-  const [extra, setExtra] = useState({
-    genres: existing?.genres,
-    styles: existing?.styles,
-    format: existing?.format,
-    tracklist: existing?.tracklist as Track[] | undefined,
-    discogsId: existing?.discogsId,
-    discogsUrl: existing?.discogsUrl,
-  })
-  const [showSearch, setShowSearch] = useState(!existing)
   const [loc, setLoc] = useState<RecordLocation>(initialLoc)
-  const [error, setError] = useState('')
-  const set = (p: Partial<typeof f>) => setF((o) => ({ ...o, ...p }))
-
-  const applyDiscogs = async (d: DiscogsImport) => {
-    set({
-      title: d.title,
-      artist: d.artist,
-      year: d.year ? String(d.year) : '',
-      label: d.label ?? '',
-      edition: d.edition ?? '',
-      released: d.released ?? '',
-      country: d.country ?? '',
-      coverRemoteUrl: d.coverUrl,
-      coverDataUrl: undefined,
-    })
-    setExtra({ genres: d.genres, styles: d.styles, format: d.format, tracklist: d.tracklist, discogsId: d.discogsId, discogsUrl: d.discogsUrl })
-    setShowSearch(false)
-    setError('')
-    if (d.coverUrl) {
-      const data = await fetchImageAsDataUrl(d.coverUrl)
-      if (data) set({ coverDataUrl: data })
-    }
-  }
-
-  const preview = useMemo(
-    () => f.coverDataUrl ?? f.coverRemoteUrl ?? generateCoverCanvas({ title: f.title || 'Sem título', artist: f.artist || 'Artista', spineColor: f.spineColor }, 160).toDataURL(),
-    [f.coverDataUrl, f.coverRemoteUrl, f.title, f.artist, f.spineColor],
-  )
-
+  const [saving, setSaving] = useState(false)
   const slotTaken = !isSlotFree(loc, existing?.id)
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!f.title.trim() || !f.artist.trim()) return setError('Informe pelo menos o título e o artista.')
-    if (slotTaken) return setError('Essa posição já está ocupada. Escolha outra ou use “próxima livre”.')
-    const year = toNum(f.year)
+  const onImport = async (d: DiscogsImport) => {
+    if (slotTaken) return
+    setSaving(true)
+    const [cover, value] = await Promise.all([d.coverUrl ? fetchImageAsDataUrl(d.coverUrl) : undefined, getEstimatedValue(d.discogsId, token)])
     const rec: VinylRecord = {
-      ...(existing ?? { id: newId(), createdAt: Date.now() }),
-      title: f.title.trim(),
-      artist: f.artist.trim(),
-      year: year ? Math.round(year) : undefined,
-      label: f.label.trim() || undefined,
-      edition: f.edition.trim() || undefined,
-      condition: f.condition || undefined,
-      pricePaid: toNum(f.pricePaid),
-      estimatedValue: toNum(f.estimatedValue),
-      notes: f.notes.trim() || undefined,
-      spineColor: f.spineColor,
-      coverDataUrl: f.coverDataUrl,
-      coverRemoteUrl: f.coverDataUrl ? undefined : f.coverRemoteUrl,
-      released: f.released.trim() || undefined,
-      country: f.country.trim() || undefined,
-      ...extra,
-      location: loc,
-      isDemo: existing?.isDemo && existing.title === f.title.trim() ? existing.isDemo : false,
+      id: existing?.id ?? newId(),
+      createdAt: existing?.createdAt ?? Date.now(),
       updatedAt: Date.now(),
+      title: d.title,
+      artist: d.artist,
+      year: d.year,
+      released: d.released,
+      country: d.country,
+      label: d.label,
+      edition: d.edition,
+      format: d.format,
+      genres: d.genres,
+      styles: d.styles,
+      tracklist: d.tracklist,
+      discogsId: d.discogsId,
+      discogsUrl: d.discogsUrl,
+      coverDataUrl: cover,
+      coverRemoteUrl: cover ? undefined : d.coverUrl,
+      estimatedValue: value?.value,
+      estimatedCurrency: value?.currency,
+      estimatedSource: value?.source,
+      estimatedAt: value ? Date.now() : undefined,
+      spineColor: existing?.spineColor ?? SPINE_PALETTE[(loc.slot * 7 + loc.row * 3 + loc.shelf) % SPINE_PALETTE.length],
+      location: loc,
     }
     saveRecord(rec)
-    showToast(existing ? 'Disco atualizado.' : 'Disco adicionado à estante.')
+    showToast(existing ? 'Disco trocado.' : 'Disco adicionado à estante.')
     setPanel({ type: 'details', id: rec.id })
   }
 
-  const onFile = async (file?: File) => {
-    if (!file) return
-    try {
-      set({ coverDataUrl: await resizeImageFile(file) })
-    } catch {
-      setError('Não foi possível ler essa imagem.')
-    }
+  const move = () => {
+    if (!existing || slotTaken) return
+    saveRecord({ ...existing, location: loc })
+    showToast('Disco movido.')
+    setPanel({ type: 'details', id: existing.id })
   }
 
   return (
-    <PanelShell title={existing ? 'Editar disco' : 'Novo disco'} side="center" width={560}>
-      <div className="mb-3">
-        {showSearch ? (
-          <DiscogsSearch onImport={applyDiscogs} />
-        ) : (
-          <button type="button" className="text-xs text-accent hover:underline" onClick={() => setShowSearch(true)}>
-            {extra.discogsId ? 'Trocar pelo Discogs…' : 'Buscar no Discogs…'}
+    <PanelShell title={existing ? 'Mover ou trocar disco' : 'Adicionar disco'} side="center" width={460}>
+      {saving ? (
+        <div className="flex items-center justify-center gap-2 py-8 text-sm text-ink-soft">
+          <Loader2 size={16} className="animate-spin" /> Buscando capa, faixas e valor…
+        </div>
+      ) : (
+        <DiscogsSearch onImport={onImport} />
+      )}
+
+      <div className="mt-3 rounded-md bg-black/5 p-2">
+        <div className="mb-1.5 flex items-center justify-between text-[11px] uppercase tracking-wide text-ink-soft">
+          Lugar na estante
+          <button
+            type="button"
+            className="normal-case tracking-normal text-accent hover:underline"
+            onClick={() => {
+              const free = findFreeSlot(slotIndex, loc)
+              if (free) setLoc(free)
+            }}
+          >
+            próximo livre
           </button>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          <NumSelect label="Estante" n={SHELF_COUNT} value={loc.shelf} onChange={(shelf) => setLoc({ ...loc, shelf })} />
+          <NumSelect label="Fileira" n={ROWS_PER_SHELF} value={loc.row} onChange={(row) => setLoc({ ...loc, row })} />
+          <NumSelect label="Posição" n={SLOTS_PER_ROW} value={loc.slot} onChange={(slot) => setLoc({ ...loc, slot })} />
+        </div>
+        {slotTaken && <p className="mt-1 text-xs text-[#9c3a26]">Esse lugar já tem um disco.</p>}
+        {existing && (
+          <div className="mt-2 flex justify-end">
+            <button className="btn-primary" disabled={slotTaken || (loc.shelf === existing.location.shelf && loc.row === existing.location.row && loc.slot === existing.location.slot)} onClick={move}>
+              Mover para cá
+            </button>
+          </div>
         )}
       </div>
-      <form onSubmit={submit} className="grid gap-3 sm:grid-cols-[150px_1fr]">
-        <div className="flex flex-col gap-2">
-          <img src={preview} alt="" className="aspect-square w-full rounded-md object-cover shadow" />
-          <label className="btn-ghost cursor-pointer border border-[#cdbb98] text-xs">
-            <ImagePlus size={14} /> Capa
-            <input type="file" accept="image/*" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
-          </label>
-          {(f.coverDataUrl || f.coverRemoteUrl) && (
-            <button type="button" className="btn-ghost text-xs" onClick={() => set({ coverDataUrl: undefined, coverRemoteUrl: undefined })}>
-              <Trash2 size={12} /> Remover capa
-            </button>
-          )}
-          <div>
-            <div className="mb-1 text-[11px] uppercase tracking-wide text-ink-soft">Lombada</div>
-            <div className="flex flex-wrap gap-1">
-              {SPINE_PALETTE.map((c) => (
-                <button
-                  type="button"
-                  key={c}
-                  aria-label={`Cor ${c}`}
-                  onClick={() => set({ spineColor: c })}
-                  className={`h-4 w-4 rounded-sm border ${f.spineColor === c ? 'border-ink ring-1 ring-ink' : 'border-black/20'}`}
-                  style={{ background: c }}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 text-sm">
-          <L label="Título *" span>
-            <input className="field" value={f.title} onChange={(e) => set({ title: e.target.value })} />
-          </L>
-          <L label="Artista *" span>
-            <input className="field" value={f.artist} onChange={(e) => set({ artist: e.target.value })} />
-          </L>
-          <L label="Ano">
-            <input className="field" inputMode="numeric" value={f.year} onChange={(e) => set({ year: e.target.value })} />
-          </L>
-          <L label="Gravadora">
-            <input className="field" value={f.label} onChange={(e) => set({ label: e.target.value })} />
-          </L>
-          <L label="Edição / variante">
-            <input className="field" value={f.edition} onChange={(e) => set({ edition: e.target.value })} />
-          </L>
-          <L label="Condição">
-            <select className="field" value={f.condition} onChange={(e) => set({ condition: e.target.value as Condition | '' })}>
-              <option value="">—</option>
-              {CONDITIONS.map((c) => (
-                <option key={c} value={c}>
-                  {c} · {CONDITION_LABELS[c]}
-                </option>
-              ))}
-            </select>
-          </L>
-          <L label="Valor pago (R$)">
-            <input className="field" inputMode="decimal" placeholder="0,00" value={f.pricePaid} onChange={(e) => set({ pricePaid: e.target.value })} />
-          </L>
-          <L label="Valor estimado atual (R$)">
-            <input className="field" inputMode="decimal" placeholder="0,00" value={f.estimatedValue} onChange={(e) => set({ estimatedValue: e.target.value })} />
-          </L>
-          <L label="Lançamento">
-            <input className="field" placeholder="aaaa-mm-dd" value={f.released} onChange={(e) => set({ released: e.target.value })} />
-          </L>
-          <L label="País">
-            <input className="field" value={f.country} onChange={(e) => set({ country: e.target.value })} />
-          </L>
-          {extra.tracklist && extra.tracklist.length > 0 && (
-            <details className="col-span-2 rounded-md bg-black/5 px-2 py-1.5 text-xs">
-              <summary className="flex cursor-pointer items-center gap-1.5 text-ink-soft">
-                <ListMusic size={13} /> {extra.tracklist.length} faixas importadas
-                {f.released ? ` · lançado em ${formatReleased(f.released)}` : ''}
-              </summary>
-              <ol className="mt-1 columns-2 gap-4">
-                {extra.tracklist.map((t, i) => (
-                  <li key={i} className="truncate">
-                    <span className="text-ink-soft">{t.position}</span> {t.title}
-                  </li>
-                ))}
-              </ol>
-            </details>
-          )}
-          <L label="Observações" span>
-            <textarea className="field min-h-14" value={f.notes} onChange={(e) => set({ notes: e.target.value })} />
-          </L>
-
-          <div className="col-span-2 rounded-md bg-black/5 p-2">
-            <div className="mb-1.5 flex items-center justify-between text-[11px] uppercase tracking-wide text-ink-soft">
-              Localização na estante
-              <button
-                type="button"
-                className="normal-case tracking-normal text-accent hover:underline"
-                onClick={() => {
-                  const free = findFreeSlot(slotIndex, loc)
-                  if (free) setLoc(free)
-                }}
-              >
-                próxima livre
-              </button>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <NumSelect label="Estante" n={SHELF_COUNT} value={loc.shelf} onChange={(shelf) => setLoc({ ...loc, shelf })} />
-              <NumSelect label="Fileira" n={ROWS_PER_SHELF} value={loc.row} onChange={(row) => setLoc({ ...loc, row })} />
-              <NumSelect label="Posição" n={SLOTS_PER_ROW} value={loc.slot} onChange={(slot) => setLoc({ ...loc, slot })} />
-            </div>
-            {slotTaken && <p className="mt-1 text-xs text-[#9c3a26]">Posição ocupada por outro disco.</p>}
-          </div>
-
-          {error && <p className="col-span-2 text-sm text-[#9c3a26]">{error}</p>}
-          <div className="col-span-2 flex justify-end gap-2 pt-1">
-            <button type="button" className="btn-ghost" onClick={() => setPanel(existing ? { type: 'details', id: existing.id } : null)}>
-              Cancelar
-            </button>
-            <button type="submit" className="btn-primary">
-              Salvar
-            </button>
-          </div>
-        </div>
-      </form>
     </PanelShell>
-  )
-}
-
-function L({ label, span, children }: { label: string; span?: boolean; children: React.ReactNode }) {
-  return (
-    <label className={`flex flex-col gap-0.5 ${span ? 'col-span-2' : ''}`}>
-      <span className="text-[11px] uppercase tracking-wide text-ink-soft">{label}</span>
-      {children}
-    </label>
   )
 }
 

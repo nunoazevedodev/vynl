@@ -212,3 +212,17 @@ export const blindsLightTexture = () =>
     g.fillRect(0, 0, w, h)
     g.globalCompositeOperation = 'source-over'
   })
+
+export const checkerTexture = () =>
+  make('checker', [64, 64], (g, w, h) => {
+    g.fillStyle = '#e8dcc6'
+    g.fillRect(0, 0, w, h)
+    const n = 8
+    for (let y = 0; y < n; y++)
+      for (let x = 0; x < n; x++) {
+        if ((x + y) % 2) continue
+        g.fillStyle = '#9a3a2e'
+        g.fillRect((x * w) / n, (y * h) / n, w / n, h / n)
+      }
+    noise(g, w, h, 14, 21)
+  }, [1, 1], true)

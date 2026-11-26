@@ -22,7 +22,9 @@ npm run preview    # serve o build
 
 ## Discogs (cadastro de álbuns)
 
-As estantes começam vazias. Para adicionar um disco, aponte para um espaço livre na prateleira (ou use o **+**) e digite o nome do álbum: o app busca no **Discogs** e, ao escolher um resultado, preenche título, artista, ano, **data de lançamento**, país, gravadora e número de catálogo, formato, gêneros/estilos, **lista de faixas** com duração e capa.
+As estantes começam vazias. Para adicionar um disco, aponte para um espaço livre na prateleira (ou use o **+**) e digite o nome do álbum: o app busca no **Discogs** e, ao escolher um resultado, o disco já vai para a estante com **capa**, **ano**, **faixas** e **valor estimado**. Os detalhes do disco mostram só isso: capa, nome, ano, faixas e valor.
+
+**Valor estimado:** usa a sugestão de preço do Discogs para VG+ (`/marketplace/price_suggestions`, só funciona se a sua conta tiver o perfil de vendedor configurado) e, se não houver, o menor preço anunciado no Marketplace em reais (`/marketplace/stats`). Dá para atualizar pelo ícone ao lado do valor.
 
 1. Gere um token pessoal (grátis) em https://www.discogs.com/settings/developers → *Generate new token*.
 2. Cole no próprio formulário (na primeira vez) ou em **Configurações → Discogs**.
@@ -54,7 +56,7 @@ Três ícones discretos no canto inferior esquerdo abrem a **coleção** (busca 
 ## Decisões técnicas
 
 - **Stack:** React + TypeScript + Vite, Three.js com React Three Fiber e drei, Zustand, Tailwind v4, IndexedDB (`idb`) e Lucide.
-- **Discos:** cada estante desenha suas 150 posições com **um único `InstancedMesh`**, ou seja, 4 draw calls para os 600 discos. A seleção não faz raycast nos discos: ela usa uma caixa invisível por fileira e calcula a posição pelo ponto atingido. O raycast só testa cerca de 20 objetos interativos registrados e roda a cada 2 quadros.
+- **Discos:** cada estante desenha suas 150 posições com **um único `InstancedMesh`**, e a capa de cada disco vem de um atlas de textura por estante (`coverAtlas.ts`, 150 capas de 64 px), ou seja, 4 draw calls para os 600 discos. A seleção não faz raycast nos discos: ela usa uma caixa invisível por fileira e calcula a posição pelo ponto atingido. O raycast só testa cerca de 20 objetos interativos registrados e roda a cada 2 quadros.
 - **Sem re-render durante o movimento:** câmera, ciclo do dia, rotação do disco e luzes são atualizados por refs dentro de `useFrame`. O tempo do dia vive em um objeto mutável (`timeState`), fora do React.
 - **Iluminação barata:** luz hemisférica, uma direcional (o sol pela janela) e no máximo duas luzes pontuais (teto e abajur). Não há sombras em tempo real. A luz da janela no piso é um quadrado aditivo ("luz falsa").
 - **Cidade:** céu feito com um shader simples (gradiente, sol, estrelas). Os prédios são 3 `InstancedMesh`, um por faixa de altura, com mapa emissivo de janelas que acendem à noite.

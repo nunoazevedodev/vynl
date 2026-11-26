@@ -1,5 +1,6 @@
 import { CABINET } from '../scene/layout'
 import { woodTexture } from '../scene/textures'
+import { Plant } from './Decor'
 import { Lamp } from './Lamp'
 import { RecordDisplay } from './RecordDisplay'
 import { RecordPlayer } from './RecordPlayer'
@@ -40,9 +41,37 @@ export function Cabinet({ quality }: { quality: 'high' | 'low' }) {
           </mesh>
         )),
       )}
-      <RecordPlayer position={[-W / 2 + 0.32, H, 0]} />
-      <RecordDisplay position={[0.02, H, -0.04]} />
-      <Lamp position={[W / 2 - 0.3, H, -0.04]} quality={quality} />
+      <RecordPlayer position={[-W / 2 + 0.3, H, 0]} />
+      <RecordDisplay position={[-0.08, H, -0.06]} />
+      <Mug position={[0.2, H, 0.08]} />
+      <Plant position={[0.38, H, -0.08]} seed={4} />
+      <Lamp position={[0.66, H, -0.1]} quality={quality} />
+    </group>
+  )
+}
+
+/** Caneca branca com carinha de gato. */
+function Mug({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position} rotation-y={0.4}>
+      <mesh position={[0, 0.05, 0]}>
+        <cylinderGeometry args={[0.04, 0.038, 0.1, 12]} />
+        <meshLambertMaterial color="#f2ede4" />
+      </mesh>
+      <mesh position={[0.045, 0.05, 0]} rotation-x={Math.PI / 2}>
+        <torusGeometry args={[0.022, 0.007, 5, 10]} />
+        <meshLambertMaterial color="#f2ede4" />
+      </mesh>
+      <mesh position={[0, 0.05, 0.0395]}>
+        <circleGeometry args={[0.018, 10]} />
+        <meshBasicMaterial color="#2a2630" />
+      </mesh>
+      {[-0.012, 0.012].map((x) => (
+        <mesh key={x} position={[x, 0.068, 0.0395]} rotation-z={x > 0 ? -0.3 : 0.3}>
+          <circleGeometry args={[0.008, 3]} />
+          <meshBasicMaterial color="#2a2630" />
+        </mesh>
+      ))}
     </group>
   )
 }

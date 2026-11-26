@@ -54,7 +54,7 @@ export function Lighting({ quality }: { quality: 'high' | 'low' }) {
       const m = wallPatch.current.material as MeshBasicMaterial
       m.color.copy(env.sun)
       m.opacity = strength * Math.max(0, env.sunX + 0.2) * 0.9
-      wallPatch.current.position.y = 1.4 - Math.max(0, env.sunElevation) * 0.6
+      wallPatch.current.position.y = 1.85 - Math.max(0, env.sunElevation) * 0.3
     }
     const fog = scene.fog as Fog | null
     if (fog) fog.color.copy(env.skyBottom)
@@ -64,14 +64,14 @@ export function Lighting({ quality }: { quality: 'high' | 'low' }) {
     <>
       <hemisphereLight ref={hemi} args={['#ffffff', '#c8b090', 1]} />
       <directionalLight ref={sun} position={[0, 4, -10]} intensity={1} />
-      {quality === 'high' && <pointLight ref={ceiling} position={[0, ROOM.height - 0.35, -0.6]} distance={9} decay={1.2} intensity={1} />}
+      {quality === 'high' && <pointLight ref={ceiling} position={[0, ROOM.height - 0.35, -0.4]} distance={7} decay={1.2} intensity={1} />}
       {/* Luz da janela atravessando a persiana (luz falsa, sem sombras em tempo real) */}
-      <mesh ref={patch} rotation-x={-Math.PI / 2} position={[WINDOW.x, 0.013, -HALF_L + 1.15]}>
-        <planeGeometry args={[WINDOW.width * 0.95, 1.5]} />
+      <mesh ref={patch} rotation-x={-Math.PI / 2} position={[WINDOW.x, 0.013, -HALF_L + 1.05]}>
+        <planeGeometry args={[WINDOW.width * 0.95, 1.3]} />
         <meshBasicMaterial map={stripes} transparent opacity={0.2} blending={AdditiveBlending} depthWrite={false} />
       </mesh>
-      <mesh ref={wallPatch} rotation-y={Math.PI / 2} position={[-HALF_W + 0.015, 1.4, -HALF_L + 0.75]}>
-        <planeGeometry args={[1.1, 1.0]} />
+      <mesh ref={wallPatch} rotation-y={Math.PI / 2} position={[-HALF_W + 0.015, 1.7, -HALF_L + 0.45]}>
+        <planeGeometry args={[0.7, 0.8]} />
         <meshBasicMaterial map={stripes} transparent opacity={0} blending={AdditiveBlending} depthWrite={false} />
       </mesh>
     </>

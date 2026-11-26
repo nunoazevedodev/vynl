@@ -1,115 +1,80 @@
-import { ArrowRightLeft, Disc3, ExternalLink, Pencil, Trash2 } from 'lucide-react'
-import { formatReleased } from '../data/discogs'
+import { ArrowRightLeft, Disc3, RefreshCw, Trash2 } from 'lucide-react'
 import { useState } from 'react'
+import { getEstimatedValue } from '../data/discogs'
 import { useAppStore } from '../store/useAppStore'
 import { PanelShell } from '../ui/PanelShell'
 import { coverUrl } from './coverArt'
-import { CONDITION_LABELS, describeLocation, formatBRL } from './RecordModel'
+import { formatBRL } from './RecordModel'
 
-/** Visualização ampliada da capa e das informações do disco selecionado. */
+/** Visualização minimalista: capa, nome, ano, faixas e valor estimado. */
 export function RecordDetails({ id }: { id: string }) {
   const record = useAppStore((s) => s.records[id])
   const player = useAppStore((s) => s.player)
-  const { setPanel, placeOnPlayer, deleteRecord, togglePlay, ejectRecord } = useAppStore.getState()
+  const token = useAppStore((s) => s.settings.discogsToken)
+  const { setPanel, placeOnPlayer, deleteRecord, togglePlay, saveRecord, showToast } = useAppStore.getState()
   const [confirming, setConfirming] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
   if (!record) return null
   const onPlayer = player.recordId === record.id
+  const year = record.released?.slice(0, 4) || record.year
 
-  const diff = record.estimatedValue !== undefined && record.pricePaid !== undefined ? record.estimatedValue - record.pricePaid : undefined
+  const refreshValue = async () => {
+    if (!record.discogsId || !token) return
+    setRefreshing(true)
+    const v = await getEstimatedValue(record.discogsId, token)
+    setRefreshing(false)
+    if (!v) return showToast('O Discogs não tem preço para esse disco agora.')
+    saveRecord({ ...record, estimatedValue: v.value, estimatedCurrency: v.currency, estimatedSource: v.source, estimatedAt: Date.now() })
+  }
 
   return (
-    <PanelShell
-      title={
-        <span className="flex items-center gap-2">
-          Disco {record.isDemo && <span className="rounded bg-warm/15 px-1.5 py-0.5 text-[10px] text-warm">DEMO</span>}
-        </span>
-      }
-    >
+    <PanelShell title="" width={340}>
       <img src={coverUrl(record)} alt="" className="mb-3 aspect-square w-full rounded-md object-cover shadow-md" />
-      <h2 className="text-xl font-bold leading-tight">{record.title}</h2>
-      <p className="mb-3 text-ink-soft">
-        {record.artist}
-        {record.year ? ` · ${record.year}` : ''}
-      </p>
-
-      <dl className="mb-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-        <Row k="Lançamento" v={formatReleased(record.released)} />
-        <Row k="País" v={record.country} />
-        <Row k="Gravadora" v={record.label} />
-        <Row k="Formato" v={record.format} />
-        <Row k="Edição" v={record.edition} />
-        <Row k="Condição" v={record.condition ? `${record.condition} — ${CONDITION_LABELS[record.condition]}` : undefined} />
-        <Row k="Local" v={describeLocation(record.location)} />
-      </dl>
-
-      <div className="mb-3 grid grid-cols-2 gap-2 text-sm">
-        <div className="rounded-md bg-black/5 p-2">
-          <div className="text-[11px] uppercase tracking-wide text-ink-soft">Valor pago</div>
-          <div className="font-bold">{formatBRL(record.pricePaid)}</div>
+      <div className="mb-3 flex items-end justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-xl font-bold leading-tight">{record.title}</h2>
+          {year && <p className="text-ink-soft">{year}</p>}
         </div>
-        <div className="rounded-md bg-black/5 p-2">
-          <div className="text-[11px] uppercase tracking-wide text-ink-soft">Valor estimado</div>
-          <div className="font-bold">{formatBRL(record.estimatedValue)}</div>
-          {diff !== undefined && diff !== 0 && (
-            <div className={`text-[11px] ${diff > 0 ? 'text-accent' : 'text-[#9c3a26]'}`}>
-              {diff > 0 ? '+' : ''}
-              {formatBRL(diff)}
-            </div>
-          )}
+        <div className="shrink-0 text-right">
+          <div className="flex items-center justify-end gap-1 text-lg font-bold">
+            {formatBRL(record.estimatedValue, record.estimatedCurrency)}
+            {record.discogsId && token && (
+              <button aria-label="Atualizar valor" title="Atualizar valor pelo Discogs" className="rounded p-0.5 text-ink-soft hover:bg-black/5" onClick={refreshValue}>
+                <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} />
+              </button>
+            )}
+          </div>
+          <div className="text-[10px] text-ink-soft">{record.estimatedSource === 'lowest' ? 'menor preço no Discogs' : 'valor estimado'}</div>
         </div>
       </div>
 
-      {!!(record.genres?.length || record.styles?.length) && (
-        <div className="mb-3 flex flex-wrap gap-1">
-          {[...new Set([...(record.genres ?? []), ...(record.styles ?? [])])].map((g) => (
-            <span key={g} className="rounded-full bg-accent/10 px-2 py-0.5 text-[11px] text-accent">
-              {g}
-            </span>
-          ))}
-        </div>
-      )}
-
       {record.tracklist && record.tracklist.length > 0 && (
-        <div className="mb-3">
-          <div className="mb-1 text-[11px] uppercase tracking-wide text-ink-soft">Faixas</div>
-          <ol className="rounded-md bg-black/5 py-1 text-sm">
-            {record.tracklist.map((t, i) => (
-              <li key={i} className="flex gap-2 px-2 py-0.5">
-                <span className="w-7 shrink-0 text-ink-soft">{t.position}</span>
-                <span className="min-w-0 flex-1 truncate">{t.title}</span>
-                {t.duration && <span className="shrink-0 tabular-nums text-ink-soft">{t.duration}</span>}
-              </li>
-            ))}
-          </ol>
-        </div>
+        <ol className="mb-3 text-sm">
+          {record.tracklist.map((t, i) => (
+            <li key={i} className="flex gap-2 border-b border-[#e6dac2] py-1 last:border-0">
+              <span className="w-6 shrink-0 text-ink-soft">{t.position}</span>
+              <span className="min-w-0 flex-1 truncate">{t.title}</span>
+              {t.duration && <span className="shrink-0 tabular-nums text-ink-soft">{t.duration}</span>}
+            </li>
+          ))}
+        </ol>
       )}
 
-      {record.notes && <p className="mb-3 whitespace-pre-wrap rounded-md bg-[#fffaf0] p-2 text-sm text-ink-soft">{record.notes}</p>}
-
-      <div className="flex flex-wrap gap-1.5">
-        {onPlayer ? (
-          <>
-            <button className="btn-primary" onClick={togglePlay}>
-              <Disc3 size={15} /> {player.playing ? 'Pausar' : 'Tocar'}
-            </button>
-            <button className="btn-ghost" onClick={ejectRecord}>Tirar da radiola</button>
-          </>
-        ) : (
-          <button
-            className="btn-primary"
-            onClick={() => {
+      <div className="flex items-center gap-1">
+        <button
+          className="btn-primary flex-1"
+          onClick={() => {
+            if (onPlayer) togglePlay()
+            else {
               placeOnPlayer(record.id)
               setPanel(null)
-            }}
-          >
-            <Disc3 size={15} /> Colocar na radiola
-          </button>
-        )}
-        <button className="btn-ghost" onClick={() => setPanel({ type: 'form', id: record.id })}>
-          <Pencil size={14} /> Editar
+            }
+          }}
+        >
+          <Disc3 size={15} /> {onPlayer ? (player.playing ? 'Pausar' : 'Tocar') : 'Colocar na radiola'}
         </button>
-        <button className="btn-ghost" onClick={() => setPanel({ type: 'form', id: record.id })} title="Altere estante, fileira e posição">
-          <ArrowRightLeft size={14} /> Mover
+        <button className="btn-ghost" title="Mover" aria-label="Mover" onClick={() => setPanel({ type: 'form', id: record.id })}>
+          <ArrowRightLeft size={15} />
         </button>
         {confirming ? (
           <button
@@ -119,29 +84,14 @@ export function RecordDetails({ id }: { id: string }) {
               setPanel(null)
             }}
           >
-            Confirmar remoção
+            Remover?
           </button>
         ) : (
-          <button className="btn-danger" onClick={() => setConfirming(true)}>
-            <Trash2 size={14} /> Remover
+          <button className="btn-danger" title="Remover" aria-label="Remover" onClick={() => setConfirming(true)}>
+            <Trash2 size={15} />
           </button>
         )}
       </div>
-      {record.discogsUrl && (
-        <a href={record.discogsUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1 text-xs text-accent hover:underline">
-          Ver no Discogs <ExternalLink size={11} />
-        </a>
-      )}
-      <p className="mt-3 text-[11px] text-ink-soft">A radiola ainda é só visual: a reprodução de áudio será adicionada depois.</p>
     </PanelShell>
-  )
-}
-
-function Row({ k, v }: { k: string; v?: string }) {
-  return (
-    <>
-      <dt className="text-ink-soft">{k}</dt>
-      <dd className="font-medium">{v || '—'}</dd>
-    </>
   )
 }

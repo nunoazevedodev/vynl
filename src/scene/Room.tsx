@@ -36,8 +36,8 @@ export function Room() {
         <meshLambertMaterial map={floor} />
       </mesh>
       {/* Tapete */}
-      <mesh rotation-x={-Math.PI / 2} position={[0, 0.006, -0.4]}>
-        <planeGeometry args={[2.0, 2.8]} />
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.006, -0.45]}>
+        <planeGeometry args={[1.5, 2.3]} />
         <meshLambertMaterial map={rugTexture()} />
       </mesh>
       {/* Teto */}
@@ -46,7 +46,7 @@ export function Room() {
         <meshLambertMaterial map={ceiling} />
       </mesh>
       {/* Luminária de teto */}
-      <mesh position={[0, H - 0.03, -0.6]}>
+      <mesh position={[0, H - 0.03, -0.4]}>
         <cylinderGeometry args={[0.28, 0.32, 0.06, 16]} />
         <meshBasicMaterial color="#fff3dc" />
       </mesh>
@@ -81,7 +81,7 @@ export function Room() {
       <Baseboards />
 
       {/* Porta na parede da entrada */}
-      <group position={[1.4, 0, HALF_L - 0.01]}>
+      <group position={[0.95, 0, HALF_L - 0.01]}>
         <mesh position={[0, 1.03, 0]}>
           <boxGeometry args={[0.92, 2.06, 0.04]} />
           <meshLambertMaterial map={wood} color="#e9dcc6" />
@@ -96,7 +96,7 @@ export function Room() {
         </mesh>
       </group>
       {/* Interruptor */}
-      <mesh position={[0.78, 1.15, HALF_L - 0.01]}>
+      <mesh position={[0.35, 1.15, HALF_L - 0.01]}>
         <boxGeometry args={[0.08, 0.12, 0.015]} />
         <meshLambertMaterial color="#f8f6f2" />
       </mesh>
