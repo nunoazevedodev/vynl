@@ -6,24 +6,25 @@ let ctx: AudioContext | null = null
 let buffer: AudioBuffer | null = null
 
 function makeBuffer(c: AudioContext) {
-  const seconds = 3.2
+  const seconds = 0.9
   const sr = c.sampleRate
   const b = c.createBuffer(2, Math.floor(seconds * sr), sr)
   for (let ch = 0; ch < 2; ch++) {
     const d = b.getChannelData(ch)
     let lp = 0
     for (let i = 0; i < d.length; i++) {
-      // hiss suave (ruído branco passado num filtro passa-baixa simples)
-      lp += (Math.random() * 2 - 1 - lp) * 0.18
-      let v = lp * 0.25
+      // hiss fininho: ruído branco menos a parte grave (passa-alta simples)
+      const n = Math.random() * 2 - 1
+      lp += (n - lp) * 0.08
+      let v = (n - lp) * 0.12
       // estalos: impulsos curtos e raros
-      if (Math.random() < 0.00045) {
-        const amp = 0.25 + Math.random() * 0.6
-        const len = Math.floor(sr * (0.0008 + Math.random() * 0.002))
+      if (Math.random() < 0.0007) {
+        const amp = 0.15 + Math.random() * 0.35
+        const len = Math.floor(sr * (0.0003 + Math.random() * 0.0008))
         for (let k = 0; k < len && i + k < d.length; k++) d[i + k] += amp * (1 - k / len) * (Math.random() * 2 - 1)
       }
       // "batida" da agulha no início
-      if (i < sr * 0.04) v += (Math.random() * 2 - 1) * 0.5 * (1 - i / (sr * 0.04))
+      if (i < sr * 0.02) v += (Math.random() * 2 - 1) * 0.3 * (1 - i / (sr * 0.02))
       d[i] += v
     }
   }
@@ -42,9 +43,9 @@ export function playCrackle(volume = 0.6) {
     const now = ctx.currentTime
     const peak = 0.22 * Math.max(0.15, volume)
     gain.gain.setValueAtTime(0, now)
-    gain.gain.linearRampToValueAtTime(peak, now + 0.05)
-    gain.gain.setValueAtTime(peak, now + 1.4)
-    gain.gain.linearRampToValueAtTime(0, now + 3.1) // some por baixo da música
+    gain.gain.linearRampToValueAtTime(peak, now + 0.02)
+    gain.gain.setValueAtTime(peak, now + 0.3)
+    gain.gain.linearRampToValueAtTime(0, now + 0.85) // a música entra em ~0,4 s e o chiado some por baixo dela
     src.connect(gain).connect(ctx.destination)
     src.start(now)
   } catch {
@@ -53,4 +54,4 @@ export function playCrackle(volume = 0.6) {
 }
 
 /** Tempo (ms) de chiado antes da música entrar. */
-export const CRACKLE_LEAD_MS = 1300
+export const CRACKLE_LEAD_MS = 400
