@@ -3,7 +3,7 @@ import { Canvas } from '@react-three/fiber'
 import { useEffect, useState } from 'react'
 import { setPs2TextureStyle } from './textures'
 import { Armchair } from '../furniture/Armchair'
-import { WallShelf } from '../furniture/Decor'
+import { FloorPlant, WallShelf } from '../furniture/Decor'
 import { Cabinet } from '../furniture/Cabinet'
 import { MusicCorner } from '../furniture/MusicCorner'
 import { Posters } from '../furniture/Posters'
@@ -14,7 +14,7 @@ import { CameraController } from './CameraController'
 import { CityView } from './CityView'
 import { InspectRecord } from './InspectRecord'
 import { InteractionSystem } from './InteractionSystem'
-import { HALF_W, SHELVES } from './layout'
+import { FLOOR_PLANTS, HALF_W, SHELVES } from './layout'
 import { Lighting } from './Lighting'
 import { Room } from './Room'
 
@@ -58,6 +58,9 @@ export function Experience() {
       <Armchair />
       <MusicCorner quality={quality} />
       <RightCorner />
+      {FLOOR_PLANTS.map(([x, z], i) => (
+        <FloorPlant key={i} position={[x, 0, z]} seed={i + 2} />
+      ))}
       <Posters />
       <WallShelf position={[-HALF_W, 1.95, 0.55]} rotationY={Math.PI / 2} />
       <WallShelf position={[HALF_W, 1.95, -1.42]} rotationY={-Math.PI / 2} />

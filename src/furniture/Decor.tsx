@@ -258,3 +258,46 @@ export function SleepingCat({ position, rotationY = 0, color = '#2a2630' }: { po
     </group>
   )
 }
+
+/** Planta grande de chão num vaso de cerâmica (para cantos do quarto). */
+export function FloorPlant({ position, seed = 1 }: { position: [number, number, number]; seed?: number }) {
+  const leaves = useMemo(() => {
+    const r = rng(seed * 31 + 5)
+    return Array.from({ length: 16 }, (_, i) => {
+      const a = (i / 16) * Math.PI * 2 + r() * 0.4
+      const h = 0.55 + r() * 0.75
+      const out = 0.12 + r() * 0.16
+      return { a, h, out, tilt: 0.5 + r() * 0.6, s: 0.11 + r() * 0.06, dark: i % 3 === 0 }
+    })
+  }, [seed])
+  return (
+    <group position={position}>
+      {/* Vaso */}
+      <mesh position={[0, 0.2, 0]}>
+        <cylinderGeometry args={[0.2, 0.15, 0.4, 12]} />
+        <meshLambertMaterial color="#b8643c" flatShading />
+      </mesh>
+      <mesh position={[0, 0.41, 0]}>
+        <cylinderGeometry args={[0.215, 0.215, 0.04, 12]} />
+        <meshLambertMaterial color="#a0553a" />
+      </mesh>
+      <mesh position={[0, 0.425, 0]} rotation-x={-Math.PI / 2}>
+        <circleGeometry args={[0.19, 12]} />
+        <meshLambertMaterial color="#3a2a20" />
+      </mesh>
+      {/* Caules e folhas grandes */}
+      {leaves.map((l, i) => (
+        <group key={i} position={[0, 0.42, 0]} rotation-y={l.a}>
+          <mesh position={[l.out / 2, l.h / 2, 0]} rotation-z={-Math.atan2(l.out, l.h)}>
+            <cylinderGeometry args={[0.008, 0.012, Math.hypot(l.out, l.h), 4]} />
+            <meshLambertMaterial color="#4a6a36" />
+          </mesh>
+          <mesh position={[l.out + 0.06, l.h, 0]} rotation={[0, 0, -l.tilt]} scale={[1.6, 0.25, 1]}>
+            <icosahedronGeometry args={[l.s, 0]} />
+            <meshLambertMaterial color={l.dark ? '#3f6a34' : '#5a8a44'} flatShading />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  )
+}

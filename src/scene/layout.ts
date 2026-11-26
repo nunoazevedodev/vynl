@@ -51,6 +51,12 @@ export const SEATED_EYE_HEIGHT = 1.12
 export const PLAYER_RADIUS = 0.24
 export const START_POSITION: [number, number, number] = [0, EYE_HEIGHT, 2.55]
 
+/** Plantas grandes nos cantos da parede da entrada. */
+export const FLOOR_PLANTS: [number, number][] = [
+  [-HALF_W + 0.3, HALF_L - 0.3],
+  [HALF_W - 0.3, HALF_L - 0.3],
+]
+
 /** Obstáculos no plano XZ: [minX, maxX, minZ, maxZ]. */
 export type Box2 = [number, number, number, number]
 export const COLLIDERS: Box2[] = [
@@ -60,4 +66,5 @@ export const COLLIDERS: Box2[] = [
   }),
   [CABINET.x - CABINET.width / 2, CABINET.x + CABINET.width / 2, -HALF_L, CABINET.z + CABINET.depth / 2],
   [CHAIR.x - 0.45, CHAIR.x + 0.45, CHAIR.z - 0.45, CHAIR.z + 0.45],
+  ...FLOOR_PLANTS.map(([x, z]) => [x - 0.24, x + 0.24, z - 0.24, z + 0.24] as Box2),
 ]
