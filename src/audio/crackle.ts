@@ -16,10 +16,10 @@ function makeBuffer(c: AudioContext) {
       // hiss fininho: ruído branco menos a parte grave (passa-alta simples)
       const n = Math.random() * 2 - 1
       lp += (n - lp) * 0.08
-      let v = (n - lp) * 0.12
+      let v = (n - lp) * 0.06
       // estalos: impulsos curtos e raros
-      if (Math.random() < 0.0007) {
-        const amp = 0.15 + Math.random() * 0.35
+      if (Math.random() < 0.0016) {
+        const amp = 0.2 + Math.random() * 0.45
         const len = Math.floor(sr * (0.0003 + Math.random() * 0.0008))
         for (let k = 0; k < len && i + k < d.length; k++) d[i + k] += amp * (1 - k / len) * (Math.random() * 2 - 1)
       }
@@ -41,7 +41,7 @@ export function playCrackle(volume = 0.6) {
     src.buffer = buffer
     const gain = ctx.createGain()
     const now = ctx.currentTime
-    const peak = 0.22 * Math.max(0.15, volume)
+    const peak = 0.15 * Math.max(0.15, volume)
     gain.gain.setValueAtTime(0, now)
     gain.gain.linearRampToValueAtTime(peak, now + 0.02)
     gain.gain.setValueAtTime(peak, now + 0.3)
