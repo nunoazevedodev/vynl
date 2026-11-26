@@ -20,6 +20,9 @@ export interface Settings {
   ps2Look: boolean
   /** Token pessoal do Discogs (fica só neste navegador). */
   discogsToken: string
+  /** Client ID do app no Spotify for Developers (para tocar via Spotify). */
+  spotifyClientId: string
+  volume: number
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -33,6 +36,8 @@ export const DEFAULT_SETTINGS: Settings = {
   ceilingOn: true,
   ps2Look: true,
   discogsToken: '',
+  spotifyClientId: '',
+  volume: 0.6,
 }
 
 export type HoverInfo =

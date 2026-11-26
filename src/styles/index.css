@@ -75,3 +75,28 @@ input, textarea, select { user-select: text; }
   background-size: 4px 4px, 100% 3px;
   image-rendering: pixelated;
 }
+
+/* Barra de música */
+.np-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #7a7448 var(--pct, 0%), #e2cdb0 var(--pct, 0%));
+  cursor: pointer;
+}
+.np-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #6e6a40;
+  border: 2px solid #f4e6d0;
+}
+.np-range::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #6e6a40;
+  border: 2px solid #f4e6d0;
+}

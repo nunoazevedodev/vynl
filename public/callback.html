@@ -1,0 +1,9 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>vynl · Spotify</title>
+<script>
+  // O Spotify só aceita 127.0.0.1 como endereço de retorno. Os dados do vynl
+  // ficam guardados em "localhost", então devolvemos o código para lá.
+  location.replace('http://localhost:' + location.port + '/' + location.search + '#spotify')
+</script>
+<p style="font-family:sans-serif">Voltando para o vynl…</p>

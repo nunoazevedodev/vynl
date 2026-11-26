@@ -1,4 +1,6 @@
 import { useEffect } from 'react'
+import { NowPlayingBar } from '../audio/NowPlayingBar'
+import { initSpotify } from '../audio/spotifyPlayer'
 import { RecordDetails } from '../records/RecordDetails'
 import { RecordForm } from '../records/RecordForm'
 import { Experience } from '../scene/Experience'
@@ -14,7 +16,7 @@ export default function App() {
   const loaded = useAppStore((s) => s.loaded)
   const panel = useAppStore((s) => s.panel)
   useEffect(() => {
-    void useAppStore.getState().init()
+    void useAppStore.getState().init().then(() => initSpotify())
   }, [])
 
   return (
@@ -27,6 +29,7 @@ export default function App() {
       {panel?.type === 'form' && <RecordForm key={panel.id ?? 'new'} id={panel.id} location={panel.location} />}
       {panel?.type === 'settings' && <SettingsPanel />}
       {panel?.type === 'collection' && <CollectionPanel />}
+      <NowPlayingBar />
       <Toast />
       <Intro />
     </>

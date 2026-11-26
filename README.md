@@ -35,6 +35,16 @@ As estantes começam vazias. Para adicionar um disco, aponte para um espaço liv
 
 O token fica salvo só no seu navegador (IndexedDB). A busca precisa rodar via `npm run dev` / `npm run preview`; a página publicada no Claude bloqueia acesso a sites externos.
 
+## Spotify (música de verdade)
+
+Com **Spotify Premium**, o disco que está na radiola toca de verdade: o vynl vira um aparelho do Spotify (Web Playback SDK), busca o álbum e toca do começo. A barra de baixo mostra a faixa, o progresso (dá para arrastar) e tem voltar, pausar, avançar e volume.
+
+1. Em https://developer.spotify.com/dashboard → *Create app*.
+2. *Redirect URI*: `http://127.0.0.1:5173/callback.html`; marque **Web API** e **Web Playback SDK**.
+3. Copie o **Client ID** → vynl → Configurações → Spotify → cole → *Entrar com o Spotify*.
+
+O servidor de desenvolvimento escuta em 127.0.0.1 (exigência do Spotify para o retorno do login); a página de retorno devolve para `localhost`, onde ficam os seus dados.
+
 ## Controles
 
 | Ação | Primeira pessoa | Navegação simples |

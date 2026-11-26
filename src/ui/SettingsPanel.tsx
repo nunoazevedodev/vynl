@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { periodName, timeState } from '../scene/timeOfDay'
 import { useAppStore } from '../store/useAppStore'
 import { PanelShell } from './PanelShell'
+import { REDIRECT_URI, isLoggedIn, login, logout } from '../audio/spotifyAuth'
 
 export function SettingsPanel() {
   const s = useAppStore((st) => st.settings)
@@ -18,6 +19,7 @@ export function SettingsPanel() {
 
   return (
     <PanelShell title="Configurações" width={340}>
+      <SpotifySection />
       <Section title="Navegação">
         <Seg value={s.navMode} onChange={(navMode) => update({ navMode })} options={[['fps', 'Primeira pessoa'], ['accessible', 'Simples']]} />
         <Slider label="Sensibilidade do mouse" min={0.2} max={2.5} step={0.1} value={s.mouseSensitivity} onChange={(mouseSensitivity) => update({ mouseSensitivity })} />
@@ -110,5 +112,34 @@ function Seg<T extends string>({ value, onChange, options }: { value: T; onChang
         </button>
       ))}
     </div>
+  )
+}
+
+function SpotifySection() {
+  const clientId = useAppStore((st) => st.settings.spotifyClientId)
+  const update = useAppStore((st) => st.updateSettings)
+  const logged = isLoggedIn()
+  return (
+    <Section title="Spotify (música de verdade · Premium)">
+      <input className="field" placeholder="Client ID do seu app no Spotify" value={clientId} onChange={(e) => update({ spotifyClientId: e.target.value.trim() })} />
+      <p className="text-xs text-ink-soft">
+        Endereço de retorno para cadastrar no Spotify: <span className="select-all text-ink">{REDIRECT_URI}</span>
+      </p>
+      {logged ? (
+        <button
+          className="btn-ghost border border-[#cdbb98]"
+          onClick={() => {
+            logout()
+            location.reload()
+          }}
+        >
+          Sair do Spotify
+        </button>
+      ) : (
+        <button className="btn-primary" disabled={clientId.length < 20} onClick={() => void login(clientId)}>
+          Entrar com o Spotify
+        </button>
+      )}
+    </Section>
   )
 }

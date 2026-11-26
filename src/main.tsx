@@ -11,7 +11,7 @@ createRoot(document.getElementById('root')!).render(
 
 if (import.meta.env.DEV) {
   // Ganchos de depuração (somente em desenvolvimento).
-  void Promise.all([import('./scene/timeOfDay'), import('./scene/interaction'), import('./store/useAppStore')]).then(
-    ([t, i, s]) => Object.assign(window, { __vynl: { timeState: t.timeState, camera: i.cameraState, store: s.useAppStore } }),
+  void Promise.all([import('./scene/timeOfDay'), import('./scene/interaction'), import('./store/useAppStore'), import('./audio/spotifyPlayer')]).then(
+    ([t, i, s, sp]) => Object.assign(window, { __vynl: { timeState: t.timeState, camera: i.cameraState, store: s.useAppStore, spotify: sp.useSpotify } }),
   )
 }
