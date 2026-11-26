@@ -238,3 +238,43 @@ export const signTexture = () =>
     g.textAlign = 'center'
     ;['GOOD', 'MUSIC', 'GOOD', 'TIMES'].forEach((t, i) => g.fillText(t, w / 2, 18 + i * 17))
   }, [1, 1], true)
+
+/** Gomos da bola de basquete (linhas pretas sobre laranja). */
+export const basketballTexture = () =>
+  make('basketball', [64, 32], (g, w, h) => {
+    g.fillStyle = '#d8692a'
+    g.fillRect(0, 0, w, h)
+    noise(g, w, h, 18, 77)
+    g.strokeStyle = '#1e140e'
+    g.lineWidth = 1.5
+    g.beginPath()
+    g.moveTo(0, h / 2)
+    g.lineTo(w, h / 2)
+    for (const x of [w / 4, (3 * w) / 4]) {
+      g.moveTo(x, 0)
+      g.lineTo(x, h)
+    }
+    g.stroke()
+    g.beginPath()
+    g.ellipse(w / 2, h / 2, w * 0.12, h * 0.5, 0, 0, Math.PI * 2)
+    g.ellipse(0, h / 2, w * 0.12, h * 0.5, 0, 0, Math.PI * 2)
+    g.ellipse(w, h / 2, w * 0.12, h * 0.5, 0, 0, Math.PI * 2)
+    g.stroke()
+  }, [1, 1], true)
+
+/** Camisa 10 listrada azul/grená, com nome e número (sem escudo nem patrocínios). */
+export const jerseyTexture = () =>
+  make('jersey', [96, 112], (g, w, h) => {
+    const stripe = w / 7
+    for (let i = 0; i < 7; i++) {
+      g.fillStyle = i % 2 ? '#a3233f' : '#1d3f8a'
+      g.fillRect(i * stripe, 0, stripe, h)
+    }
+    noise(g, w, h, 14, 91)
+    g.fillStyle = '#f2c23a'
+    g.textAlign = 'center'
+    g.font = 'bold 15px monospace'
+    g.fillText('MESSI', w / 2, 34)
+    g.font = 'bold 44px monospace'
+    g.fillText('10', w / 2, 78)
+  }, [1, 1], true)

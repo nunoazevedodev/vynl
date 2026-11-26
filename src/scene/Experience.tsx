@@ -61,7 +61,6 @@ export function Experience() {
       <RightCorner />
       <ChristmasTree position={[XMAS_TREE[0], 0, XMAS_TREE[1]]} quality={quality} />
       <Posters />
-      <WallShelf position={[-HALF_W, 1.95, 0.55]} rotationY={Math.PI / 2} />
       <WallShelf position={[HALF_W, 1.95, -1.42]} rotationY={-Math.PI / 2} />
       <InspectRecord />
       <CameraController />
