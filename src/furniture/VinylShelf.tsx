@@ -23,8 +23,8 @@ export function VinylShelf({ index, placement }: { index: number; placement: She
         <RowHitbox key={row} shelf={index} row={row} y={y} />
       ))}
       <SlotHighlight shelf={index} />
-      {/* O móvel 0 ganha o "cantinho musical" (MusicCorner); os outros, decoração variada */}
-      {index !== 0 && <DecorRow y={SHELF.height + 0.012} z={SHELF.depth / 2} width={SHELF.width - 0.2} seed={index * 5 + 3} dense={index % 2 === 1} />}
+      {/* Móveis 0 e 3 têm cantinhos próprios (MusicCorner / RightCorner); os outros, decoração variada */}
+      {index !== 0 && index !== 3 && <DecorRow y={SHELF.height + 0.012} z={SHELF.depth / 2} width={SHELF.width - 0.2} seed={index * 5 + 3} dense={index % 2 === 1} />}
     </group>
   )
 }

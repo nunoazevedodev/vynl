@@ -3,11 +3,11 @@ import { useRef } from 'react'
 import { DoubleSide, type Group, type Mesh, type MeshBasicMaterial } from 'three'
 import { HALF_W, ROOM, SHELF } from '../scene/layout'
 import { signTexture, woodTexture } from '../scene/textures'
-import { Books, BookStack, Figurine, Plant, SleepingCat } from './Decor'
+import { Books, BookStack, Figurine, Plant } from './Decor'
 
 /**
  * Cantinho musical (adaptado da arte de referência) no móvel de vinil da esquerda,
- * o mais próximo da radiola: luminária cogumelo, lava lamp, livros, gato, planta,
+ * o mais próximo da radiola: luminária cogumelo, lava lamp, livros, planta,
  * porta-lápis e, na parede, prateleira com câmera, letreiro, discos e planta pendurada.
  *
  * Coordenadas locais: x ao longo da parede (x = -z do mundo), z saindo da parede.
@@ -20,7 +20,6 @@ export function MusicCorner({ quality }: { quality: 'high' | 'low' }) {
     <group position={[-HALF_W, 0, 0]} rotation-y={Math.PI / 2}>
       {/* Tampo do móvel */}
       <Books position={[0.55, TOP, Z]} seed={11} />
-      <SleepingCat position={[0.9, TOP, Z]} rotationY={-1.2} />
       <MushroomLamp position={[1.1, TOP, Z]} quality={quality} />
       <group position={[1.32, TOP, Z]}>
         <BookStack position={[0, 0, 0]} seed={2} />

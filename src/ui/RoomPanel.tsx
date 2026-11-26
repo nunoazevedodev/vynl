@@ -1,5 +1,5 @@
 import { Check } from 'lucide-react'
-import { FLOOR_COLORS, WALL_COLORS } from '../scene/roomStyle'
+import { FLOOR_COLORS, WALL_COLORS, WALL_FAMILIES } from '../scene/roomStyle'
 import { useAppStore } from '../store/useAppStore'
 import { PanelShell } from './PanelShell'
 
@@ -9,8 +9,31 @@ export function RoomPanel() {
   const floor = useAppStore((s) => s.settings.floorColor)
   const update = useAppStore((s) => s.updateSettings)
   return (
-    <PanelShell title="Personalizar quarto" side="left" width={300}>
-      <Swatches title="Parede" options={WALL_COLORS} value={wall} onPick={(wallColor) => update({ wallColor })} />
+    <PanelShell title="Personalizar quarto" side="left" width={330}>
+      <section className="mb-4">
+        <h3 className="mb-2 flex justify-between text-[11px] uppercase tracking-wider text-ink-soft">
+          Parede <span className="normal-case tracking-normal text-ink">{(WALL_COLORS.find((c) => c.id === wall) ?? WALL_COLORS[0]).name}</span>
+        </h3>
+        <div className="flex flex-col gap-1.5">
+          {WALL_FAMILIES.map((f) => (
+            <div key={f.name} className="grid grid-cols-[64px_repeat(4,1fr)] items-center gap-1.5">
+              <span className="text-[11px] text-ink-soft">{f.name}</span>
+              {f.colors.map((o) => (
+                <button
+                  key={o.id}
+                  title={o.name}
+                  aria-label={o.name}
+                  onClick={() => update({ wallColor: o.id })}
+                  className={`grid h-8 place-items-center border-2 ${o.id === wall ? 'border-ink' : 'border-[#cdbb98] hover:border-ink-soft'}`}
+                  style={{ background: o.hex }}
+                >
+                  {o.id === wall && <Check size={13} className="text-ink" />}
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
+      </section>
       <Swatches title="Piso" options={FLOOR_COLORS} value={floor} onPick={(floorColor) => update({ floorColor })} wood />
     </PanelShell>
   )
