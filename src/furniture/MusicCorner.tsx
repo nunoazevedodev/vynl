@@ -1,6 +1,6 @@
 import { useFrame } from '@react-three/fiber'
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { CanvasTexture, DoubleSide, NearestFilter, Shape, ShapeGeometry, SRGBColorSpace, type Group, type MeshBasicMaterial, type PointLight } from 'three'
+import { useMemo, useRef } from 'react'
+import { SRGBColorSpace, TextureLoader, type Group, type MeshBasicMaterial, type PointLight } from 'three'
 import { HALF_W, SHELF } from '../scene/layout'
 import { basketballTexture, woodTexture } from '../scene/textures'
 import { Books, Plant } from './Decor'
@@ -32,7 +32,8 @@ export function MusicCorner({ quality }: { quality: 'high' | 'low' }) {
       </FloatingShelf>
       <WallRecord position={[0.3, 2.16, 0.015]} label="#b8352a" />
       <WallRecord position={[0.3, 1.84, 0.015]} label="#d89a2a" />
-      <JerseyFrame position={[1.5, 1.92, 0.02]} />
+      {/* Quadro da guitarra (imagem enviada pelo usuário); base alinhada com o quadro do Dark Side */}
+      <GuitarFrame position={[1.5, 1.655, 0.02]} />
       <FloatingShelf position={[2.15, 2.18, 0]} width={0.42}>
         <Books position={[-0.18, 0.015, 0.1]} seed={44} />
         <TrailingPot position={[0.12, 0.015, 0.1]} />
@@ -179,123 +180,28 @@ function LavaLamp({ position, quality }: { position: [number, number, number]; q
   )
 }
 
-/**
- * Quadro preto com a camisa 10 pendurada num cabide, como na foto de referência
- * (adaptado: listras grená/azul, gola laranja, nome e número em fonte pixel).
- * Mesma altura do quadro do Dark Side ao lado.
- */
-function JerseyFrame({ position }: { position: [number, number, number] }) {
-  const tex = useJerseyTexture()
-  const { shirt } = useMemo(() => {
-    const s = new Shape()
-    // camisa de costas, mangas curtas abertas
-    s.moveTo(-0.06, 0.2)
-    s.lineTo(-0.13, 0.18)
-    s.lineTo(-0.2, 0.09)
-    s.lineTo(-0.16, 0.04)
-    s.lineTo(-0.12, 0.08)
-    s.lineTo(-0.115, -0.2)
-    s.lineTo(0.115, -0.2)
-    s.lineTo(0.12, 0.08)
-    s.lineTo(0.16, 0.04)
-    s.lineTo(0.2, 0.09)
-    s.lineTo(0.13, 0.18)
-    s.lineTo(0.06, 0.2)
-    s.quadraticCurveTo(0, 0.175, -0.06, 0.2)
-    const g = new ShapeGeometry(s)
-    const pos = g.attributes.position
-    const uv = g.attributes.uv
-    for (let i = 0; i < pos.count; i++) uv.setXY(i, (pos.getX(i) + 0.2) / 0.4, (pos.getY(i) + 0.2) / 0.4)
-    return { shirt: g }
+/** Quadro com a guitarra, usando a arte enviada pelo usuário (public/decor/guitar-frame.png). */
+function GuitarFrame({ position }: { position: [number, number, number] }) {
+  const tex = useMemo(() => {
+    const t = new TextureLoader().load(`${import.meta.env.BASE_URL}decor/guitar-frame.png`)
+    t.colorSpace = SRGBColorSpace
+    return t
   }, [])
+  const H = 0.66
+  const W = (H * 333) / 520
   return (
-    <group position={position}>
-      {/* Moldura e fundo pretos */}
-      <mesh>
-        <boxGeometry args={[0.46, 0.53, 0.04]} />
+    <group position={[position[0], position[1] + H / 2, position[2]]}>
+      <mesh position={[0, 0, -0.01]}>
+        <boxGeometry args={[W, H, 0.02]} />
         <meshLambertMaterial color="#141416" />
       </mesh>
-      <mesh position={[0, 0, 0.021]}>
-        <planeGeometry args={[0.41, 0.48]} />
-        <meshLambertMaterial color="#1c1c20" />
-      </mesh>
-      {/* Cabide */}
-      <mesh position={[0, 0.2, 0.024]}>
-        <torusGeometry args={[0.012, 0.0025, 4, 10, Math.PI * 1.4]} />
-        <meshLambertMaterial color="#b8b8bc" />
-      </mesh>
-      <mesh position={[0, 0.175, 0.025]} scale={[1, 0.22, 1]}>
-        <ringGeometry args={[0.1, 0.112, 16, 1, 0, Math.PI]} />
-        <meshLambertMaterial color="#c8945a" />
-      </mesh>
-      <mesh geometry={shirt} position={[0, -0.03, 0.026]} scale={1.08}>
-        <meshLambertMaterial map={tex} side={DoubleSide} />
-      </mesh>
-      {/* Gola em V laranja */}
-      {[-1, 1].map((sd) => (
-        <mesh key={sd} position={[sd * 0.02, 0.165, 0.027]} rotation-z={sd * 0.9}>
-          <planeGeometry args={[0.05, 0.008]} />
-          <meshLambertMaterial color="#e8852a" />
-        </mesh>
-      ))}
-      {/* Vidro com reflexo sutil */}
-      <mesh position={[0, 0, 0.03]}>
-        <planeGeometry args={[0.41, 0.48]} />
-        <meshBasicMaterial color="#ffffff" transparent opacity={0.05} depthWrite={false} />
+      <mesh position={[0, 0, 0.001]}>
+        <planeGeometry args={[W, H]} />
+        {/* A arte já vem com a luz quente "pintada": mostra como está, sem tingir de novo */}
+        <meshBasicMaterial map={tex} color="#e4dcd4" />
       </mesh>
     </group>
   )
-}
-
-/** Textura da camisa desenhada depois que a fonte pixel carrega (senão o canvas usa a padrão). */
-function useJerseyTexture() {
-  const [tex, setTex] = useState(() => jerseyCanvasTexture())
-  useEffect(() => {
-    let alive = true
-    void document.fonts.load('500 40px "Pixelify Sans"').then(() => alive && setTex(jerseyCanvasTexture()))
-    return () => {
-      alive = false
-    }
-  }, [])
-  return tex
-}
-
-function jerseyCanvasTexture() {
-  const c = document.createElement('canvas')
-  c.width = 160
-  c.height = 160
-  const g = c.getContext('2d')!
-  // listras largas grená/azul com fio azul-marinho entre elas
-  const cols = ['#1f3f94', '#a5193a', '#1f3f94', '#a5193a', '#1f3f94', '#a5193a', '#1f3f94']
-  const sw = c.width / cols.length
-  cols.forEach((col, i) => {
-    g.fillStyle = col
-    g.fillRect(i * sw, 0, sw, c.height)
-    g.fillStyle = '#16245a'
-    g.fillRect(i * sw - 1, 0, 2, c.height)
-  })
-  // mangas azuis
-  g.fillStyle = '#1f3f94'
-  g.fillRect(0, 0, 30, 70)
-  g.fillRect(c.width - 30, 0, 30, 70)
-  // nome e número com contorno escuro
-  g.textAlign = 'center'
-  g.textBaseline = 'alphabetic'
-  g.lineJoin = 'round'
-  const text = (t: string, y: number, size: number) => {
-    g.font = `500 ${size}px "Pixelify Sans", monospace`
-    g.lineWidth = Math.max(2, size / 10)
-    g.strokeStyle = '#3a2a10'
-    g.strokeText(t, c.width / 2, y)
-    g.fillStyle = '#f2c43a'
-    g.fillText(t, c.width / 2, y)
-  }
-  text('MESSI', 56, 26)
-  text('10', 124, 68)
-  const t = new CanvasTexture(c)
-  t.colorSpace = SRGBColorSpace
-  t.magFilter = NearestFilter
-  return t
 }
 
 function TrailingPot({ position }: { position: [number, number, number] }) {
