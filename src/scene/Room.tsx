@@ -1,5 +1,5 @@
-import { useMemo } from 'react'
-import { DoubleSide } from 'three'
+import { useLayoutEffect, useMemo, useRef } from 'react'
+import { DoubleSide, Object3D, type InstancedMesh } from 'three'
 import { HALF_L, HALF_W, ROOM, WINDOW } from './layout'
 import { ceilingTexture, floorTexture, rugTexture, wallTexture, woodTexture } from './textures'
 
@@ -75,6 +75,7 @@ export function Room() {
       {/* Espessura da parede na abertura */}
       <WindowReveal x0={wx0} x1={wx1} y0={wy0} y1={wy1} />
       <WindowFrame x0={wx0} x1={wx1} y0={wy0} y1={wy1} />
+      <Blinds x0={wx0} x1={wx1} y0={wy0} y1={wy1} />
 
       {/* Rodapés */}
       <Baseboards />
@@ -196,6 +197,50 @@ function Baseboards() {
         <boxGeometry args={[ROOM.width, h, 0.016]} />
         <meshLambertMaterial color={c} />
       </mesh>
+    </group>
+  )
+}
+
+/** Persiana horizontal (lâminas inclinadas e abertas, deixando a cidade aparecer). */
+function Blinds({ x0, x1, y0, y1 }: { x0: number; x1: number; y0: number; y1: number }) {
+  const ref = useRef<InstancedMesh>(null)
+  const top = y1 - 0.02
+  const bottom = y0 + (y1 - y0) * 0.38 // persiana levantada até ~1/3 da janela
+  const gap = 0.075
+  const count = Math.floor((top - bottom) / gap)
+  useLayoutEffect(() => {
+    const m = ref.current
+    if (!m) return
+    const o = new Object3D()
+    for (let i = 0; i < count; i++) {
+      o.position.set((x0 + x1) / 2, top - i * gap, -HALF_L - 0.05)
+      o.rotation.set(-1.05, 0, 0)
+      o.updateMatrix()
+      m.setMatrixAt(i, o.matrix)
+    }
+    m.instanceMatrix.needsUpdate = true
+  }, [count, top, x0, x1])
+  return (
+    <group>
+      <instancedMesh ref={ref} args={[undefined, undefined, count]}>
+        <boxGeometry args={[x1 - x0 - 0.04, 0.05, 0.004]} />
+        <meshLambertMaterial color="#efe9df" />
+      </instancedMesh>
+      {/* Trilho inferior e cordões */}
+      <mesh position={[(x0 + x1) / 2, bottom - 0.03, -HALF_L - 0.05]}>
+        <boxGeometry args={[x1 - x0 - 0.03, 0.025, 0.03]} />
+        <meshLambertMaterial color="#e2dacd" />
+      </mesh>
+      <mesh position={[(x0 + x1) / 2, top + 0.015, -HALF_L - 0.05]}>
+        <boxGeometry args={[x1 - x0 - 0.01, 0.04, 0.05]} />
+        <meshLambertMaterial color="#e2dacd" />
+      </mesh>
+      {[0.3, 0.7].map((f) => (
+        <mesh key={f} position={[x0 + (x1 - x0) * f, (top + bottom) / 2, -HALF_L - 0.045]}>
+          <boxGeometry args={[0.004, top - bottom, 0.004]} />
+          <meshLambertMaterial color="#cfc6b8" />
+        </mesh>
+      ))}
     </group>
   )
 }

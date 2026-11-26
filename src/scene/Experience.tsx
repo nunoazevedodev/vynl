@@ -1,6 +1,7 @@
 import { PerformanceMonitor } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { setPs2TextureStyle } from './textures'
 import { Armchair } from '../furniture/Armchair'
 import { Cabinet } from '../furniture/Cabinet'
 import { Posters } from '../furniture/Posters'
@@ -20,17 +21,23 @@ import { Room } from './Room'
  */
 export function Experience() {
   const quality = useAppStore((s) => s.settings.quality)
-  const maxDpr = quality === 'high' ? Math.min(window.devicePixelRatio, 1.5) : 0.75
+  const ps2 = useAppStore((s) => s.settings.ps2Look)
+  const height = useViewportHeight()
+  // Visual PS2: renderiza em ~480 linhas e amplia sem suavização (como a saída do console).
+  const ps2Dpr = Math.min(1, (quality === 'high' ? 540 : 420) / height)
+  const maxDpr = ps2 ? ps2Dpr : quality === 'high' ? Math.min(window.devicePixelRatio, 1.5) : 0.75
   const [dpr, setDpr] = useState(maxDpr)
+  useEffect(() => setPs2TextureStyle(ps2), [ps2])
 
   return (
     <Canvas
-      key={quality}
+      key={`${quality}-${ps2}`}
       flat
       dpr={Math.min(dpr, maxDpr)}
-      gl={{ antialias: quality === 'high', powerPreference: 'high-performance' }}
+      gl={{ antialias: quality === 'high' && !ps2, powerPreference: 'high-performance' }}
       camera={{ fov: 70, near: 0.05, far: 400 }}
       style={{ position: 'fixed', inset: 0 }}
+      className={ps2 ? 'ps2-canvas' : undefined}
     >
       <PerformanceMonitor
         onDecline={() => setDpr((d) => Math.max(0.6, d - 0.25))}
@@ -50,4 +57,14 @@ export function Experience() {
       <InteractionSystem />
     </Canvas>
   )
+}
+
+function useViewportHeight() {
+  const [h, setH] = useState(window.innerHeight)
+  useEffect(() => {
+    const on = () => setH(window.innerHeight)
+    window.addEventListener('resize', on)
+    return () => window.removeEventListener('resize', on)
+  }, [])
+  return h
 }

@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import { repository } from '../data/database'
-import { createDemoRecords } from '../data/seed'
 import { buildSlotIndex, slotKey, type RecordLocation, type VinylRecord } from '../records/RecordModel'
 
 export type NavMode = 'fps' | 'accessible'
@@ -14,6 +13,10 @@ export interface Settings {
   cycleMinutes: number
   cyclePaused: boolean
   lampOn: boolean
+  /** Visual PS2: resolução interna baixa, texturas sem suavização e pontilhado. */
+  ps2Look: boolean
+  /** Token pessoal do Discogs (fica só neste navegador). */
+  discogsToken: string
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -24,6 +27,8 @@ export const DEFAULT_SETTINGS: Settings = {
   cycleMinutes: 11,
   cyclePaused: false,
   lampOn: true,
+  ps2Look: true,
+  discogsToken: '',
 }
 
 export type HoverInfo =
@@ -75,11 +80,12 @@ let initPromise: Promise<void> | null = null
 async function loadInitial(set: (p: Partial<AppState>) => void) {
   try {
     let list = await repository.getAllRecords()
-    const seeded = await repository.getValue<boolean>('seeded')
-    if (list.length === 0 && !seeded) {
-      list = createDemoRecords()
-      await repository.putRecords(list)
-      await repository.setValue('seeded', true)
+    // As estantes começam vazias. Remove (uma única vez) os discos de demonstração de versões anteriores.
+    if (!(await repository.getValue<boolean>('demoRemoved'))) {
+      const demo = list.filter((r) => r.isDemo)
+      await Promise.all(demo.map((r) => repository.deleteRecord(r.id)))
+      list = list.filter((r) => !r.isDemo)
+      await repository.setValue('demoRemoved', true)
     }
     const settings = { ...DEFAULT_SETTINGS, ...((await repository.getValue<Partial<Settings>>('settings')) ?? {}) }
     const player = (await repository.getValue<PlayerState>('player')) ?? { recordId: null, playing: false }
@@ -88,9 +94,7 @@ async function loadInitial(set: (p: Partial<AppState>) => void) {
     set({ records, slotIndex: buildSlotIndex(records), settings, player: { ...player, playing: false }, loaded: true })
   } catch (e) {
     console.warn('[vynl] IndexedDB indisponível, usando memória', e)
-    const list = createDemoRecords()
-    const records = Object.fromEntries(list.map((r) => [r.id, r]))
-    set({ records, slotIndex: buildSlotIndex(records), loaded: true })
+    set({ records: {}, slotIndex: new Map(), loaded: true })
   }
 }
 

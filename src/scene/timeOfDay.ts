@@ -24,9 +24,9 @@ const KEYS: Key[] = [
   { t: 0.0, skyTop: '#8fb8de', skyBottom: '#f6dcc0', sun: '#ffe2b8', sunIntensity: 1.5, hemiSky: '#eef0f6', hemiGround: '#e2d2bc', hemiIntensity: 1.05, night: 0.15, sunElevation: 0.25, sunX: -0.7 }, // manhã
   { t: 0.24, skyTop: '#6fa3d6', skyBottom: '#d8e8f2', sun: '#fff5e4', sunIntensity: 1.9, hemiSky: '#f6f7fb', hemiGround: '#e8dac6', hemiIntensity: 1.2, night: 0.0, sunElevation: 0.75, sunX: 0.0 }, // tarde
   { t: 0.46, skyTop: '#5e6fa8', skyBottom: '#f2a26b', sun: '#ff9a5a', sunIntensity: 1.6, hemiSky: '#f3d6c6', hemiGround: '#d2ae94', hemiIntensity: 0.95, night: 0.3, sunElevation: 0.12, sunX: 0.6 }, // pôr do sol
-  { t: 0.56, skyTop: '#2b2f5c', skyBottom: '#b8667a', sun: '#d0627a', sunIntensity: 0.5, hemiSky: '#a89ab8', hemiGround: '#6a5060', hemiIntensity: 0.6, night: 0.75, sunElevation: -0.1, sunX: 0.85 }, // crepúsculo
-  { t: 0.68, skyTop: '#0b1026', skyBottom: '#24294a', sun: '#7d8ac4', sunIntensity: 0.25, hemiSky: '#4a5378', hemiGround: '#2a2430', hemiIntensity: 0.38, night: 1.0, sunElevation: -0.6, sunX: 0.0 }, // noite
-  { t: 0.9, skyTop: '#151a3a', skyBottom: '#5a4a6a', sun: '#9a8cc0', sunIntensity: 0.35, hemiSky: '#6a6a8a', hemiGround: '#3a3040', hemiIntensity: 0.48, night: 0.85, sunElevation: -0.15, sunX: -0.9 }, // madrugada
+  { t: 0.56, skyTop: '#2b2f5c', skyBottom: '#b8667a', sun: '#d0627a', sunIntensity: 0.5, hemiSky: '#9a86c0', hemiGround: '#5a4868', hemiIntensity: 0.6, night: 0.75, sunElevation: -0.1, sunX: 0.85 }, // crepúsculo
+  { t: 0.68, skyTop: '#0b1026', skyBottom: '#24294a', sun: '#7d8ac4', sunIntensity: 0.25, hemiSky: '#5a4f9a', hemiGround: '#2a2440', hemiIntensity: 0.42, night: 1.0, sunElevation: -0.6, sunX: 0.0 }, // noite
+  { t: 0.9, skyTop: '#151a3a', skyBottom: '#5a4a6a', sun: '#9a8cc0', sunIntensity: 0.35, hemiSky: '#6a5c9a', hemiGround: '#342c48', hemiIntensity: 0.48, night: 0.85, sunElevation: -0.15, sunX: -0.9 }, // madrugada
 ]
 
 export interface Env {

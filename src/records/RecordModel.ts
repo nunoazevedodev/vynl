@@ -24,6 +24,12 @@ export const CONDITION_LABELS: Record<Condition, string> = {
   P: 'Poor',
 }
 
+export interface Track {
+  position: string
+  title: string
+  duration?: string
+}
+
 export interface VinylRecord {
   id: string
   title: string
@@ -37,8 +43,19 @@ export interface VinylRecord {
   pricePaid?: number
   /** Valor estimado atual de mercado (BRL). */
   estimatedValue?: number
-  /** Capa enviada pelo usuário (data URL JPEG redimensionada). */
+  /** Capa enviada pelo usuário ou baixada do Discogs (data URL JPEG redimensionada). */
   coverDataUrl?: string
+  /** URL remota da capa (Discogs), usada quando não foi possível baixá-la. */
+  coverRemoteUrl?: string
+  /** Data de lançamento como veio do Discogs (ex.: "1973-03-01" ou "1973"). */
+  released?: string
+  country?: string
+  genres?: string[]
+  styles?: string[]
+  format?: string
+  tracklist?: Track[]
+  discogsId?: number
+  discogsUrl?: string
   /** Cor da lombada exibida na estante. */
   spineColor: string
   location: RecordLocation

@@ -1,10 +1,20 @@
-import { CanvasTexture, LinearMipmapLinearFilter, NearestFilter, RepeatWrapping, SRGBColorSpace, type Texture } from 'three'
+import { CanvasTexture, LinearFilter, LinearMipmapLinearFilter, NearestFilter, RepeatWrapping, SRGBColorSpace, type Texture } from 'three'
 
 /**
  * Texturas procedurais pequenas (64–256 px), geradas uma vez e reaproveitadas.
  * Resolução baixa e filtragem suave dão o ar de jogo de PS2 sem ficar "pixelado".
  */
 const cache = new Map<string, Texture>()
+let ps2Style = true
+
+/** Visual PS2: texturas ampliadas sem suavização (texels visíveis, como no console). */
+export function setPs2TextureStyle(on: boolean) {
+  ps2Style = on
+  cache.forEach((t) => {
+    t.magFilter = on || t.userData.pixel ? NearestFilter : LinearFilter
+    t.needsUpdate = true
+  })
+}
 
 function make(key: string, size: [number, number], draw: (g: CanvasRenderingContext2D, w: number, h: number) => void, repeat: [number, number] = [1, 1], pixel = false) {
   const hit = cache.get(key)
@@ -18,10 +28,11 @@ function make(key: string, size: [number, number], draw: (g: CanvasRenderingCont
   t.wrapS = t.wrapT = RepeatWrapping
   t.repeat.set(...repeat)
   t.anisotropy = 4
-  if (pixel) {
+  if (pixel || ps2Style) {
     t.magFilter = NearestFilter
     t.minFilter = LinearMipmapLinearFilter
   }
+  t.userData.pixel = pixel
   cache.set(key, t)
   return t
 }
@@ -44,10 +55,10 @@ function noise(g: CanvasRenderingContext2D, w: number, h: number, amount: number
 
 export const wallTexture = () =>
   make('wall', [128, 128], (g, w, h) => {
-    g.fillStyle = '#f3eee6'
+    g.fillStyle = '#f1ece4'
     g.fillRect(0, 0, w, h)
-    noise(g, w, h, 10)
-  }, [4, 2])
+    noise(g, w, h, 16)
+  }, [6, 3])
 
 export const ceilingTexture = () =>
   make('ceiling', [64, 64], (g, w, h) => {
@@ -173,4 +184,31 @@ export const placeholderPosterTexture = (variant: number) =>
     for (let i = 0; i < 5; i++) g.fillRect(w * 0.12, h * 0.7 + i * 6, w * (0.76 - i * 0.12), 3)
     g.globalAlpha = 1
     noise(g, w, h, 16, variant + 40)
+  })
+
+/** Faixas de luz da persiana (luz falsa projetada no piso/parede). */
+export const blindsLightTexture = () =>
+  make('blinds-light', [32, 128], (g, w, h) => {
+    g.clearRect(0, 0, w, h)
+    const bands = 12
+    for (let i = 0; i < bands; i++) {
+      const y = (i / bands) * h
+      const grad = g.createLinearGradient(0, y, 0, y + h / bands)
+      grad.addColorStop(0, 'rgba(255,255,255,0)')
+      grad.addColorStop(0.3, 'rgba(255,255,255,1)')
+      grad.addColorStop(0.7, 'rgba(255,255,255,1)')
+      grad.addColorStop(1, 'rgba(255,255,255,0)')
+      g.fillStyle = grad
+      g.fillRect(0, y, w, (h / bands) * 0.62)
+    }
+    // borda suave nas laterais
+    const side = g.createLinearGradient(0, 0, w, 0)
+    side.addColorStop(0, 'rgba(0,0,0,1)')
+    side.addColorStop(0.15, 'rgba(0,0,0,0)')
+    side.addColorStop(0.85, 'rgba(0,0,0,0)')
+    side.addColorStop(1, 'rgba(0,0,0,1)')
+    g.globalCompositeOperation = 'destination-out'
+    g.fillStyle = side
+    g.fillRect(0, 0, w, h)
+    g.globalCompositeOperation = 'source-over'
   })

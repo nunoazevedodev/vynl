@@ -9,6 +9,7 @@ export function Hud() {
   const panel = useAppStore((s) => s.panel)
   const navMode = useAppStore((s) => s.settings.navMode)
   const setPanel = useAppStore((s) => s.setPanel)
+  const empty = useAppStore((s) => Object.keys(s.records).length === 0)
   if (!entered) return null
 
   return (
@@ -20,6 +21,11 @@ export function Hud() {
       {!locked && !panel && navMode === 'fps' && (
         <div className="pointer-events-none fixed left-1/2 top-4 -translate-x-1/2 rounded-full bg-black/35 px-3 py-1 text-xs text-[#f4ecdc]">
           Clique para olhar ao redor · Esc libera o mouse
+        </div>
+      )}
+      {empty && !panel && (
+        <div className="pointer-events-none fixed left-1/2 top-12 -translate-x-1/2 rounded-md bg-black/40 px-3 py-1.5 text-center text-xs text-[#f4ecdc]">
+          As estantes estão vazias. Aponte para uma prateleira e clique (ou E) para adicionar um disco.
         </div>
       )}
       {!panel && (

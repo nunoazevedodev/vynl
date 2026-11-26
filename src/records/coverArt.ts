@@ -71,6 +71,7 @@ export function generateCoverCanvas(r: Pick<VinylRecord, 'title' | 'artist' | 's
 
 export function coverUrl(r: VinylRecord): string {
   if (r.coverDataUrl) return r.coverDataUrl
+  if (r.coverRemoteUrl) return r.coverRemoteUrl
   const k = cacheKey(r)
   let u = urlCache.get(k)
   if (!u) {
@@ -85,7 +86,21 @@ export function coverTexture(r: VinylRecord): Texture {
   const k = cacheKey(r)
   let t = texCache.get(k)
   if (!t) {
-    t = r.coverDataUrl ? loader.load(r.coverDataUrl) : new CanvasTexture(generateCoverCanvas(r))
+    if (r.coverDataUrl) t = loader.load(r.coverDataUrl)
+    else {
+      const canvasTex = new CanvasTexture(generateCoverCanvas(r))
+      t = canvasTex
+      // Capa remota: troca a imagem quando (e se) carregar com CORS; senão fica a capa gerada.
+      if (r.coverRemoteUrl) {
+        const img = new Image()
+        img.crossOrigin = 'anonymous'
+        img.onload = () => {
+          (canvasTex as Texture).image = img
+          canvasTex.needsUpdate = true
+        }
+        img.src = r.coverRemoteUrl
+      }
+    }
     t.colorSpace = SRGBColorSpace
     t.anisotropy = 4
     texCache.set(k, t)

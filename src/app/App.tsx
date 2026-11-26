@@ -8,6 +8,7 @@ import { Hud } from '../ui/Hud'
 import { Intro } from '../ui/Intro'
 import { SettingsPanel } from '../ui/SettingsPanel'
 import { Toast } from '../ui/Toast'
+import { Ps2Overlay } from '../ui/Ps2Overlay'
 
 export default function App() {
   const loaded = useAppStore((s) => s.loaded)
@@ -19,6 +20,7 @@ export default function App() {
   return (
     <>
       {loaded && <Experience />}
+      <Ps2Overlay />
       <div className="vignette" />
       <Hud />
       {panel?.type === 'details' && <RecordDetails key={panel.id} id={panel.id} />}

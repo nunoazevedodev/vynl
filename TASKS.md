@@ -14,6 +14,10 @@
 - [x] Persistência em IndexedDB (discos, capas, configurações, disco na radiola)
 - [x] Qualidade reduzida + ajuste automático de DPR
 
+- [x] Estantes vazias por padrão (demos removidos)
+- [x] Cadastro por busca no Discogs: data de lançamento, faixas, gêneros, capa
+- [x] Visual PS2 (baixa resolução, texels, dithering, persiana com faixas de luz)
+
 ## Próximos passos
 - [ ] Aplicar as fotos e referências visuais que o usuário vai enviar
 - [ ] Imagens reais dos pôsteres em `public/posters/`

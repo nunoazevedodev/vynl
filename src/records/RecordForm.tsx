@@ -1,4 +1,6 @@
-import { ImagePlus, Trash2 } from 'lucide-react'
+import { ImagePlus, ListMusic, Trash2 } from 'lucide-react'
+import { fetchImageAsDataUrl, formatReleased, type DiscogsImport } from '../data/discogs'
+import { DiscogsSearch } from './DiscogsSearch'
 import { useMemo, useState } from 'react'
 import { isSlotFree, useAppStore } from '../store/useAppStore'
 import { PanelShell } from '../ui/PanelShell'
@@ -14,6 +16,7 @@ import {
   newId,
   type Condition,
   type RecordLocation,
+  type Track,
   type VinylRecord,
 } from './RecordModel'
 
@@ -47,14 +50,47 @@ export function RecordForm({ id, location }: { id?: string; location?: RecordLoc
     notes: existing?.notes ?? '',
     spineColor: existing?.spineColor ?? SPINE_PALETTE[(initialLoc.slot * 7 + initialLoc.row * 3 + initialLoc.shelf) % SPINE_PALETTE.length],
     coverDataUrl: existing?.coverDataUrl,
+    coverRemoteUrl: existing?.coverRemoteUrl,
+    released: existing?.released ?? '',
+    country: existing?.country ?? '',
   })
+  const [extra, setExtra] = useState({
+    genres: existing?.genres,
+    styles: existing?.styles,
+    format: existing?.format,
+    tracklist: existing?.tracklist as Track[] | undefined,
+    discogsId: existing?.discogsId,
+    discogsUrl: existing?.discogsUrl,
+  })
+  const [showSearch, setShowSearch] = useState(!existing)
   const [loc, setLoc] = useState<RecordLocation>(initialLoc)
   const [error, setError] = useState('')
   const set = (p: Partial<typeof f>) => setF((o) => ({ ...o, ...p }))
 
+  const applyDiscogs = async (d: DiscogsImport) => {
+    set({
+      title: d.title,
+      artist: d.artist,
+      year: d.year ? String(d.year) : '',
+      label: d.label ?? '',
+      edition: d.edition ?? '',
+      released: d.released ?? '',
+      country: d.country ?? '',
+      coverRemoteUrl: d.coverUrl,
+      coverDataUrl: undefined,
+    })
+    setExtra({ genres: d.genres, styles: d.styles, format: d.format, tracklist: d.tracklist, discogsId: d.discogsId, discogsUrl: d.discogsUrl })
+    setShowSearch(false)
+    setError('')
+    if (d.coverUrl) {
+      const data = await fetchImageAsDataUrl(d.coverUrl)
+      if (data) set({ coverDataUrl: data })
+    }
+  }
+
   const preview = useMemo(
-    () => f.coverDataUrl ?? generateCoverCanvas({ title: f.title || 'Sem título', artist: f.artist || 'Artista', spineColor: f.spineColor }, 160).toDataURL(),
-    [f.coverDataUrl, f.title, f.artist, f.spineColor],
+    () => f.coverDataUrl ?? f.coverRemoteUrl ?? generateCoverCanvas({ title: f.title || 'Sem título', artist: f.artist || 'Artista', spineColor: f.spineColor }, 160).toDataURL(),
+    [f.coverDataUrl, f.coverRemoteUrl, f.title, f.artist, f.spineColor],
   )
 
   const slotTaken = !isSlotFree(loc, existing?.id)
@@ -77,6 +113,10 @@ export function RecordForm({ id, location }: { id?: string; location?: RecordLoc
       notes: f.notes.trim() || undefined,
       spineColor: f.spineColor,
       coverDataUrl: f.coverDataUrl,
+      coverRemoteUrl: f.coverDataUrl ? undefined : f.coverRemoteUrl,
+      released: f.released.trim() || undefined,
+      country: f.country.trim() || undefined,
+      ...extra,
       location: loc,
       isDemo: existing?.isDemo && existing.title === f.title.trim() ? existing.isDemo : false,
       updatedAt: Date.now(),
@@ -97,6 +137,15 @@ export function RecordForm({ id, location }: { id?: string; location?: RecordLoc
 
   return (
     <PanelShell title={existing ? 'Editar disco' : 'Novo disco'} side="center" width={560}>
+      <div className="mb-3">
+        {showSearch ? (
+          <DiscogsSearch onImport={applyDiscogs} />
+        ) : (
+          <button type="button" className="text-xs text-accent hover:underline" onClick={() => setShowSearch(true)}>
+            {extra.discogsId ? 'Trocar pelo Discogs…' : 'Buscar no Discogs…'}
+          </button>
+        )}
+      </div>
       <form onSubmit={submit} className="grid gap-3 sm:grid-cols-[150px_1fr]">
         <div className="flex flex-col gap-2">
           <img src={preview} alt="" className="aspect-square w-full rounded-md object-cover shadow" />
@@ -104,8 +153,8 @@ export function RecordForm({ id, location }: { id?: string; location?: RecordLoc
             <ImagePlus size={14} /> Capa
             <input type="file" accept="image/*" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
           </label>
-          {f.coverDataUrl && (
-            <button type="button" className="btn-ghost text-xs" onClick={() => set({ coverDataUrl: undefined })}>
+          {(f.coverDataUrl || f.coverRemoteUrl) && (
+            <button type="button" className="btn-ghost text-xs" onClick={() => set({ coverDataUrl: undefined, coverRemoteUrl: undefined })}>
               <Trash2 size={12} /> Remover capa
             </button>
           )}
@@ -128,7 +177,7 @@ export function RecordForm({ id, location }: { id?: string; location?: RecordLoc
 
         <div className="grid grid-cols-2 gap-2 text-sm">
           <L label="Título *" span>
-            <input className="field" value={f.title} onChange={(e) => set({ title: e.target.value })} autoFocus />
+            <input className="field" value={f.title} onChange={(e) => set({ title: e.target.value })} />
           </L>
           <L label="Artista *" span>
             <input className="field" value={f.artist} onChange={(e) => set({ artist: e.target.value })} />
@@ -158,6 +207,27 @@ export function RecordForm({ id, location }: { id?: string; location?: RecordLoc
           <L label="Valor estimado atual (R$)">
             <input className="field" inputMode="decimal" placeholder="0,00" value={f.estimatedValue} onChange={(e) => set({ estimatedValue: e.target.value })} />
           </L>
+          <L label="Lançamento">
+            <input className="field" placeholder="aaaa-mm-dd" value={f.released} onChange={(e) => set({ released: e.target.value })} />
+          </L>
+          <L label="País">
+            <input className="field" value={f.country} onChange={(e) => set({ country: e.target.value })} />
+          </L>
+          {extra.tracklist && extra.tracklist.length > 0 && (
+            <details className="col-span-2 rounded-md bg-black/5 px-2 py-1.5 text-xs">
+              <summary className="flex cursor-pointer items-center gap-1.5 text-ink-soft">
+                <ListMusic size={13} /> {extra.tracklist.length} faixas importadas
+                {f.released ? ` · lançado em ${formatReleased(f.released)}` : ''}
+              </summary>
+              <ol className="mt-1 columns-2 gap-4">
+                {extra.tracklist.map((t, i) => (
+                  <li key={i} className="truncate">
+                    <span className="text-ink-soft">{t.position}</span> {t.title}
+                  </li>
+                ))}
+              </ol>
+            </details>
+          )}
           <L label="Observações" span>
             <textarea className="field min-h-14" value={f.notes} onChange={(e) => set({ notes: e.target.value })} />
           </L>

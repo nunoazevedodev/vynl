@@ -26,6 +26,10 @@ export function SettingsPanel() {
 
       <Section title="Qualidade gráfica">
         <Seg value={s.quality} onChange={(quality) => update({ quality })} options={[['high', 'Alta'], ['low', 'Reduzida']]} />
+        <label className="flex items-center justify-between text-sm">
+          <span>Visual PS2 (resolução baixa, texturas e pontilhado)</span>
+          <input type="checkbox" className="h-4 w-4 accent-[#2f5d4e]" checked={s.ps2Look} onChange={(e) => update({ ps2Look: e.target.checked })} />
+        </label>
         <p className="text-xs text-ink-soft">A reduzida diminui resolução, luzes e prédios — ideal para máquinas mais fracas.</p>
       </Section>
 
@@ -49,6 +53,19 @@ export function SettingsPanel() {
           />
         </div>
         <Slider label="Duração do ciclo completo" min={2} max={40} step={1} value={s.cycleMinutes} onChange={(cycleMinutes) => update({ cycleMinutes })} suffix=" min" />
+      </Section>
+
+      <Section title="Discogs">
+        <input
+          className="field"
+          type="password"
+          placeholder="Token pessoal do Discogs"
+          value={s.discogsToken}
+          onChange={(e) => update({ discogsToken: e.target.value.trim() })}
+        />
+        <p className="text-xs text-ink-soft">
+          Gere em discogs.com/settings/developers. Usado só para buscar álbuns; fica salvo apenas neste navegador.
+        </p>
       </Section>
 
       <Section title="Coleção">

@@ -1,4 +1,5 @@
-import { ArrowRightLeft, Disc3, Pencil, Trash2 } from 'lucide-react'
+import { ArrowRightLeft, Disc3, ExternalLink, Pencil, Trash2 } from 'lucide-react'
+import { formatReleased } from '../data/discogs'
 import { useState } from 'react'
 import { useAppStore } from '../store/useAppStore'
 import { PanelShell } from '../ui/PanelShell'
@@ -32,7 +33,10 @@ export function RecordDetails({ id }: { id: string }) {
       </p>
 
       <dl className="mb-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+        <Row k="Lançamento" v={formatReleased(record.released)} />
+        <Row k="País" v={record.country} />
         <Row k="Gravadora" v={record.label} />
+        <Row k="Formato" v={record.format} />
         <Row k="Edição" v={record.edition} />
         <Row k="Condição" v={record.condition ? `${record.condition} — ${CONDITION_LABELS[record.condition]}` : undefined} />
         <Row k="Local" v={describeLocation(record.location)} />
@@ -54,6 +58,31 @@ export function RecordDetails({ id }: { id: string }) {
           )}
         </div>
       </div>
+
+      {!!(record.genres?.length || record.styles?.length) && (
+        <div className="mb-3 flex flex-wrap gap-1">
+          {[...new Set([...(record.genres ?? []), ...(record.styles ?? [])])].map((g) => (
+            <span key={g} className="rounded-full bg-accent/10 px-2 py-0.5 text-[11px] text-accent">
+              {g}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {record.tracklist && record.tracklist.length > 0 && (
+        <div className="mb-3">
+          <div className="mb-1 text-[11px] uppercase tracking-wide text-ink-soft">Faixas</div>
+          <ol className="rounded-md bg-black/5 py-1 text-sm">
+            {record.tracklist.map((t, i) => (
+              <li key={i} className="flex gap-2 px-2 py-0.5">
+                <span className="w-7 shrink-0 text-ink-soft">{t.position}</span>
+                <span className="min-w-0 flex-1 truncate">{t.title}</span>
+                {t.duration && <span className="shrink-0 tabular-nums text-ink-soft">{t.duration}</span>}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
 
       {record.notes && <p className="mb-3 whitespace-pre-wrap rounded-md bg-[#fffaf0] p-2 text-sm text-ink-soft">{record.notes}</p>}
 
@@ -98,6 +127,11 @@ export function RecordDetails({ id }: { id: string }) {
           </button>
         )}
       </div>
+      {record.discogsUrl && (
+        <a href={record.discogsUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1 text-xs text-accent hover:underline">
+          Ver no Discogs <ExternalLink size={11} />
+        </a>
+      )}
       <p className="mt-3 text-[11px] text-ink-soft">A radiola ainda é só visual: a reprodução de áudio será adicionada depois.</p>
     </PanelShell>
   )

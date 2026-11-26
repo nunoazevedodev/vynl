@@ -20,6 +20,15 @@ npm run build      # typecheck + build de produção em dist/
 npm run preview    # serve o build
 ```
 
+## Discogs (cadastro de álbuns)
+
+As estantes começam vazias. Para adicionar um disco, aponte para um espaço livre na prateleira (ou use o **+**) e digite o nome do álbum: o app busca no **Discogs** e, ao escolher um resultado, preenche título, artista, ano, **data de lançamento**, país, gravadora e número de catálogo, formato, gêneros/estilos, **lista de faixas** com duração e capa.
+
+1. Gere um token pessoal (grátis) em https://www.discogs.com/settings/developers → *Generate new token*.
+2. Cole no próprio formulário (na primeira vez) ou em **Configurações → Discogs**.
+
+O token fica salvo só no seu navegador (IndexedDB). A busca precisa rodar via `npm run dev` / `npm run preview`; a página publicada no Claude bloqueia acesso a sites externos.
+
 ## Controles
 
 | Ação | Primeira pessoa | Navegação simples |
@@ -52,7 +61,8 @@ Três ícones discretos no canto inferior esquerdo abrem a **coleção** (busca 
 - **Texturas procedurais** pequenas (64–256 px) geradas em canvas. Não há assets pesados para baixar.
 - **Qualidade reduzida:** a resolução cai para 0,75×, o antialias e as luzes pontuais são desligados e a cidade fica menor. O `PerformanceMonitor` também reduz a resolução sozinho quando o FPS cai.
 - **Dados:** `src/data/database.ts` expõe uma interface `Repository`. Para trocar por sincronização ou backend no futuro, basta escrever outra implementação. Capas enviadas são redimensionadas para 512 px (JPEG) e salvas no próprio registro.
-- **Dados de demonstração:** os discos são fictícios, marcados com `isDemo` e com o selo **DEMO**. Dá para removê-los de uma vez nas configurações.
+- **Visual PS2** (padrão, desligável): a cena é renderizada em ~540 linhas e ampliada sem suavização, as texturas usam filtro *nearest*, e um pontilhado de Bayer 4×4 + linhas sutis imitam a saída de vídeo do console. A persiana projeta faixas de luz falsa no piso e na parede, e a noite puxa para o roxo/azul.
+- **Discogs:** `src/data/discogs.ts` (busca com debounce e cancelamento, importação do release, download da capa para data URL quando o CORS permite).
 - **Áudio:** **não implementado de propósito.** A radiola tem os estados parado e reproduzindo e anima o disco, mas não toca som. O campo `audioSource` no modelo já está reservado para quando houver um arquivo ou fonte legítima.
 
 ## Pôsteres

@@ -52,3 +52,22 @@ input, textarea, select { user-select: text; }
 
 @keyframes rise { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: none; } }
 .rise { animation: rise 180ms ease-out; }
+
+/* ---------- Visual PS2 ---------- */
+.ps2-canvas canvas {
+  image-rendering: pixelated;
+  filter: contrast(1.07) saturate(1.12) brightness(0.98);
+}
+/* Matriz de Bayer 4×4 bem sutil + linhas de entrelaçamento quase invisíveis */
+.ps2-dither {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  opacity: 0.09;
+  mix-blend-mode: overlay;
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='4' height='4' shape-rendering='crispEdges'><rect width='1' height='1' x='0' y='0' fill='%23000'/><rect width='1' height='1' x='2' y='1' fill='%23000'/><rect width='1' height='1' x='1' y='2' fill='%23fff'/><rect width='1' height='1' x='3' y='3' fill='%23fff'/><rect width='1' height='1' x='2' y='0' fill='%23777'/><rect width='1' height='1' x='0' y='2' fill='%23777'/></svg>"),
+    repeating-linear-gradient(180deg, rgba(0,0,0,0.5) 0 1px, transparent 1px 3px);
+  background-size: 4px 4px, 100% 3px;
+  image-rendering: pixelated;
+}
