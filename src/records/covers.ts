@@ -19,7 +19,9 @@ const esc = (s: string) => s.replace(/(["\\])/g, '\\$1')
 export async function coverArtArchive(artist: string, title: string): Promise<string | undefined> {
   try {
     const q = `releasegroup:"${esc(title)}" AND artist:"${esc(artist)}"`
-    const res = await fetch(`https://musicbrainz.org/ws/2/release-group/?query=${encodeURIComponent(q)}&limit=3&fmt=json`)
+    const local = ['localhost', '127.0.0.1'].includes(location.hostname)
+    const base = local ? '/api/mb' : 'https://musicbrainz.org'
+    const res = await fetch(`${base}/ws/2/release-group/?query=${encodeURIComponent(q)}&limit=3&fmt=json`)
     if (!res.ok) return undefined
     const data = (await res.json()) as { 'release-groups'?: { id: string; score?: number }[] }
     for (const rg of data['release-groups'] ?? []) {

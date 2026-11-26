@@ -6,7 +6,7 @@ import { RECORD_THICK, SHELF, SLOT_SPAN, recordZ, slotX, type ShelfPlacement } f
 import { registerInteractable } from '../scene/interaction'
 import { woodTexture } from '../scene/textures'
 import { useAppStore } from '../store/useAppStore'
-import { DecorRow, SleepingCat } from './Decor'
+import { DecorRow } from './Decor'
 
 const CAPACITY = ROWS_PER_SHELF * SLOTS_PER_ROW
 
@@ -23,8 +23,8 @@ export function VinylShelf({ index, placement }: { index: number; placement: She
         <RowHitbox key={row} shelf={index} row={row} y={y} />
       ))}
       <SlotHighlight shelf={index} />
-      <DecorRow y={SHELF.height + 0.012} z={SHELF.depth / 2} width={SHELF.width - 0.2} seed={index * 5 + 3} dense={index % 2 === 1} />
-      {index === 0 && <SleepingCat position={[0.55, SHELF.height + 0.012, SHELF.depth / 2]} rotationY={0.2} />}
+      {/* O móvel 0 ganha o "cantinho musical" (MusicCorner); os outros, decoração variada */}
+      {index !== 0 && <DecorRow y={SHELF.height + 0.012} z={SHELF.depth / 2} width={SHELF.width - 0.2} seed={index * 5 + 3} dense={index % 2 === 1} />}
     </group>
   )
 }

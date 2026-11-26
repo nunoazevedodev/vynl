@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { repository } from '../data/database'
 import { resolveCover } from '../records/covers'
+import { getRelease } from '../data/discogs'
 import { buildSlotIndex, slotKey, type RecordLocation, type VinylRecord } from '../records/RecordModel'
 
 export type NavMode = 'fps' | 'accessible'
@@ -115,7 +116,15 @@ let initPromise: Promise<void> | null = null
 async function backfillCovers() {
   const pending = Object.values(useAppStore.getState().records).filter((r) => !r.coverDataUrl && (r.coverRemoteUrl || r.discogsId))
   for (const r of pending) {
-    const cover = await resolveCover(r.coverRemoteUrl, r.artist, r.title)
+    let remote = r.coverRemoteUrl
+    if (!remote && r.discogsId) {
+      try {
+        remote = (await getRelease(r.discogsId, useAppStore.getState().settings.discogsToken)).coverUrl
+      } catch {
+        /* sem conexão */
+      }
+    }
+    const cover = await resolveCover(remote, r.artist, r.title)
     const cur = useAppStore.getState().records[r.id]
     if (cover && cur) useAppStore.getState().saveRecord({ ...cur, coverDataUrl: cover, coverRemoteUrl: undefined })
   }

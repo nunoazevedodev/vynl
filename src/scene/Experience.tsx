@@ -5,6 +5,7 @@ import { setPs2TextureStyle } from './textures'
 import { Armchair } from '../furniture/Armchair'
 import { WallShelf } from '../furniture/Decor'
 import { Cabinet } from '../furniture/Cabinet'
+import { MusicCorner } from '../furniture/MusicCorner'
 import { Posters } from '../furniture/Posters'
 import { VinylShelf } from '../furniture/VinylShelf'
 import { useAppStore } from '../store/useAppStore'
@@ -54,6 +55,7 @@ export function Experience() {
       ))}
       <Cabinet quality={quality} />
       <Armchair />
+      <MusicCorner quality={quality} />
       <Posters />
       <WallShelf position={[-HALF_W, 1.95, 0.55]} rotationY={Math.PI / 2} />
       <WallShelf position={[HALF_W, 1.95, -1.42]} rotationY={-Math.PI / 2} />

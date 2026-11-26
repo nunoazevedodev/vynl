@@ -227,3 +227,14 @@ export const checkerTexture = () =>
     noise(g, w, h, 14, 21)
   }, [1, 1], true)
 
+
+/** Quadrinho de letreiro (texto genérico) em letras de pixel. */
+export const signTexture = () =>
+  make('sign', [64, 80], (g, w, h) => {
+    g.fillStyle = '#1e1a18'
+    g.fillRect(0, 0, w, h)
+    g.fillStyle = '#e8dcc6'
+    g.font = 'bold 11px monospace'
+    g.textAlign = 'center'
+    ;['GOOD', 'MUSIC', 'GOOD', 'TIMES'].forEach((t, i) => g.fillText(t, w / 2, 18 + i * 17))
+  }, [1, 1], true)

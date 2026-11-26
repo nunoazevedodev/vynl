@@ -127,9 +127,16 @@ export async function getRelease(id: number, token?: string): Promise<DiscogsImp
 }
 
 /** Tenta baixar a capa e convertê-la em data URL (funciona se o servidor permitir CORS). */
+/** Rodando local (npm run dev/preview), as imagens passam pelo proxy do vynl. */
+export const viaProxy = (url: string) => {
+  const local = ['localhost', '127.0.0.1'].includes(location.hostname)
+  if (!local) return url
+  return url.replace(/^https:\/\/i\.discogs\.com/, '/img/discogs').replace(/^https:\/\/coverartarchive\.org/, '/img/caa')
+}
+
 export async function fetchImageAsDataUrl(url: string, max = 512): Promise<string | undefined> {
   try {
-    const res = await fetch(url, { mode: 'cors' })
+    const res = await fetch(viaProxy(url), { mode: 'cors' })
     if (!res.ok) return undefined
     const bmp = await createImageBitmap(await res.blob())
     const s = Math.min(1, max / Math.max(bmp.width, bmp.height))

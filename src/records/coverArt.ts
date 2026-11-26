@@ -1,5 +1,6 @@
 import { CanvasTexture, SRGBColorSpace, TextureLoader, type Texture } from 'three'
 import type { VinylRecord } from './RecordModel'
+import { viaProxy } from '../data/discogs'
 
 /**
  * Capas: usa a imagem enviada pelo usuário; caso não exista, gera uma capa
@@ -98,7 +99,7 @@ export function coverTexture(r: VinylRecord): Texture {
           (canvasTex as Texture).image = img
           canvasTex.needsUpdate = true
         }
-        img.src = r.coverRemoteUrl
+        img.src = viaProxy(r.coverRemoteUrl)
       }
     }
     t.colorSpace = SRGBColorSpace

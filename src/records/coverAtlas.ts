@@ -1,6 +1,7 @@
 import { CanvasTexture, LinearFilter, SRGBColorSpace } from 'three'
 import { generateCoverCanvas } from './coverArt'
 import type { VinylRecord } from './RecordModel'
+import { viaProxy } from '../data/discogs'
 
 /**
  * Atlas de capas por estante: 150 capas de 64 px numa única textura,
@@ -66,7 +67,7 @@ export class CoverAtlas {
     const y = Math.floor(i / ATLAS_COLS) * TILE
     this.g.drawImage(generateCoverCanvas(r, 128), x, y, TILE, TILE)
     this.texture.needsUpdate = true
-    const src = r.coverDataUrl ?? r.coverRemoteUrl
+    const src = r.coverDataUrl ?? (r.coverRemoteUrl ? viaProxy(r.coverRemoteUrl) : undefined)
     if (src) {
       void loadImage(src).then((img) => {
         if (!img || this.keys[i] !== key) return
