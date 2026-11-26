@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { useAppStore } from '../store/useAppStore'
+import { CRACKLE_LEAD_MS } from './crackle'
 import { getToken, handleRedirect, isLoggedIn } from './spotifyAuth'
 
 /**
@@ -138,7 +139,9 @@ export async function initSpotify() {
     })
     // A radiola gira de acordo com o Spotify
     const st = useAppStore.getState()
-    if (st.player.recordId && st.player.playing === s.paused) useAppStore.setState({ player: { ...st.player, playing: !s.paused } })
+    // Durante o chiado inicial o Spotify ainda está pausado: não desliga a radiola por isso.
+    const warmingUp = s.paused && performance.now() - startedAt < CRACKLE_LEAD_MS + 2000
+    if (!warmingUp && st.player.recordId && st.player.playing === s.paused) useAppStore.setState({ player: { ...st.player, playing: !s.paused } })
   })
   await player.connect()
 
@@ -174,19 +177,23 @@ async function playRecord(recordId: string) {
   }
 }
 
+let startedAt = -Infinity
+
 // Sincroniza a radiola → Spotify
 useAppStore.subscribe((s, prev) => {
+  if (s.player.playing && !prev.player.playing) startedAt = performance.now()
   if (!player || useSpotify.getState().status !== 'ready') return
   const { recordId, playing } = s.player
   if (recordId !== prev.player.recordId) {
-    if (recordId && playing) void playRecord(recordId)
+    // O chiado da agulha toca primeiro; a música entra logo depois.
+    if (recordId && playing) setTimeout(() => void playRecord(recordId), CRACKLE_LEAD_MS)
     else if (!recordId) void player.pause()
     return
   }
   if (playing !== prev.player.playing && recordId) {
     const now = useSpotify.getState().now
-    if (playing && loadedRecordId !== recordId) void playRecord(recordId)
-    else if (playing && now?.paused) void player.resume()
+    if (playing && loadedRecordId !== recordId) setTimeout(() => void playRecord(recordId), CRACKLE_LEAD_MS)
+    else if (playing && now?.paused) setTimeout(() => void player?.resume(), CRACKLE_LEAD_MS)
     else if (!playing && now && !now.paused) void player.pause()
   }
 })

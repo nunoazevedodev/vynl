@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { repository } from '../data/database'
+import { playCrackle } from '../audio/crackle'
 import { resolveCover } from '../records/covers'
 import { getRelease } from '../data/discogs'
 import { buildSlotIndex, slotKey, type RecordLocation, type VinylRecord } from '../records/RecordModel'
@@ -241,6 +242,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   placeOnPlayer(id) {
+    playCrackle(get().settings.volume)
     const player = { recordId: id, playing: true }
     set({ player })
     persist(repository.setValue('player', player))
@@ -253,6 +255,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       get().showToast('Escolha um disco na estante para colocar na radiola.')
       return
     }
+    if (!p.playing) playCrackle(get().settings.volume)
     set({ player: { ...p, playing: !p.playing } })
   },
   ejectRecord() {
