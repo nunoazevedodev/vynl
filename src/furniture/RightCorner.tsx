@@ -1,6 +1,7 @@
 import { useFrame } from '@react-three/fiber'
 import { useMemo, useRef } from 'react'
-import type { Group, MeshBasicMaterial } from 'three'
+import { CanvasTexture, SRGBColorSpace, type Group, type MeshBasicMaterial } from 'three'
+import { useAlbumCoverTexture } from '../records/useAlbumCover'
 import { HALF_W, SHELF } from '../scene/layout'
 import { sampleEnv } from '../scene/timeOfDay'
 import { woodTexture } from '../scene/textures'
@@ -22,10 +23,10 @@ export function RightCorner() {
       <FramedRecord position={[1.16, 2.07, 0.012]} label="#3f6f8c" />
 
       {/* Tampo do móvel da direita (perto da entrada) */}
-      <LeaningRecords position={[-0.2, TOP, Z - 0.04]} colors={['#d8b45a', '#a8463a', '#5f8fa8']} />
+      <LeaningRecords position={[-0.2, TOP, Z - 0.04]} colors={['#d8b45a', '#a8463a', '#5f8fa8']} cover={{ artist: 'Arctic Monkeys', album: 'AM' }} />
       <Cassettes position={[0.32, TOP, Z + 0.04]} />
       <Fern position={[0.72, TOP, Z]} />
-      <LeaningRecords position={[1.12, TOP, Z - 0.04]} colors={['#7a5a9a', '#2f5d4e']} />
+      <LeaningRecords position={[1.12, TOP, Z - 0.04]} colors={['#7a5a9a', '#2f5d4e']} cover={{ artist: 'Kendrick Lamar', album: 'DAMN.' }} />
     </group>
   )
 }
@@ -118,8 +119,8 @@ function FramedRecord({ position, label }: { position: [number, number, number];
   )
 }
 
-/** Discos encostados na parede, com o vinil aparecendo. */
-function LeaningRecords({ position, colors }: { position: [number, number, number]; colors: string[] }) {
+/** Discos encostados na parede, com o vinil aparecendo. O da frente pode mostrar uma capa real. */
+function LeaningRecords({ position, colors, cover }: { position: [number, number, number]; colors: string[]; cover?: { artist: string; album: string } }) {
   return (
     <group position={position}>
       {colors.map((c, i) => (
@@ -132,10 +133,14 @@ function LeaningRecords({ position, colors }: { position: [number, number, numbe
             <boxGeometry args={[0.31, 0.31, 0.006]} />
             <meshLambertMaterial color={c} />
           </mesh>
-          <mesh position={[0, 0.17, 0.004]}>
-            <circleGeometry args={[0.06, 3 + i * 2]} />
-            <meshLambertMaterial color="#f4ecdc" />
-          </mesh>
+          {i === 0 && cover ? (
+            <CoverFace artist={cover.artist} album={cover.album} color={c} />
+          ) : (
+            <mesh position={[0, 0.17, 0.004]}>
+              <circleGeometry args={[0.06, 3 + i * 2]} />
+              <meshLambertMaterial color="#f4ecdc" />
+            </mesh>
+          )}
         </group>
       ))}
     </group>
@@ -187,5 +192,26 @@ function Fern({ position }: { position: [number, number, number] }) {
         })}
       </group>
     </group>
+  )
+}
+
+/** Frente do envelope com a capa original do álbum (baixada e guardada no navegador). */
+function CoverFace({ artist, album, color }: { artist: string; album: string; color: string }) {
+  const placeholder = useMemo(() => {
+    const c = document.createElement('canvas')
+    c.width = c.height = 4
+    const g = c.getContext('2d')!
+    g.fillStyle = color
+    g.fillRect(0, 0, 4, 4)
+    const t = new CanvasTexture(c)
+    t.colorSpace = SRGBColorSpace
+    return t
+  }, [color])
+  const tex = useAlbumCoverTexture(artist, album, placeholder)
+  return (
+    <mesh position={[0, 0.155, 0.0035]}>
+      <planeGeometry args={[0.305, 0.305]} />
+      <meshLambertMaterial map={tex} />
+    </mesh>
   )
 }
