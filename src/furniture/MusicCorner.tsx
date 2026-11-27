@@ -1,6 +1,8 @@
 import { useFrame } from '@react-three/fiber'
-import { useMemo, useRef } from 'react'
-import { SRGBColorSpace, TextureLoader, type Group, type MeshBasicMaterial, type PointLight } from 'three'
+import { useRef } from 'react'
+import { type Group, type MeshBasicMaterial, type PointLight } from 'three'
+import { RoundedBox } from '@react-three/drei'
+import { GuitarFrame } from './GuitarFrame'
 import { HALF_W, SHELF } from '../scene/layout'
 import { basketballTexture, woodTexture } from '../scene/textures'
 import { Books, Plant } from './Decor'
@@ -13,7 +15,7 @@ import { Books, Plant } from './Decor'
  *
  * Coordenadas locais: x = -z do mundo (cresce da entrada para a janela), z saindo da parede.
  */
-const TOP = SHELF.height + 0.012
+const TOP = SHELF.height + 0.001
 const Z = SHELF.depth / 2
 
 export function MusicCorner({ quality }: { quality: 'high' | 'low' }) {
@@ -32,14 +34,14 @@ export function MusicCorner({ quality }: { quality: 'high' | 'low' }) {
       </FloatingShelf>
       <WallRecord position={[0.3, 2.16, 0.015]} label="#b8352a" />
       <WallRecord position={[0.3, 1.84, 0.015]} label="#d89a2a" />
-      {/* Quadro da guitarra (imagem enviada pelo usuário); base alinhada com o quadro do Dark Side */}
+      {/* Quadro com guitarra em relevo; base alinhada com o quadro do Dark Side */}
       <GuitarFrame position={[1.5, 1.655, 0.02]} />
       <FloatingShelf position={[2.15, 2.18, 0]} width={0.42}>
         <Books position={[-0.18, 0.015, 0.1]} seed={44} />
         <TrailingPot position={[0.12, 0.015, 0.1]} />
       </FloatingShelf>
       <FloatingShelf position={[2.15, 1.82, 0]} width={0.42}>
-        <RetroCamera position={[-0.04, 0.015, 0.1]} />
+        <InstantCamera position={[-0.04, 0.0175, 0.1]} />
       </FloatingShelf>
 
       {/* Tampo dos móveis */}
@@ -48,10 +50,8 @@ export function MusicCorner({ quality }: { quality: 'high' | 'low' }) {
       <Books position={[-0.05, TOP, Z]} seed={63} />
       {/* Lava lamp entre o quadro do Dark Side e o da camisa */}
       <LavaLamp position={[1.19, TOP, Z]} quality={quality} />
-      <Plant position={[1.88, TOP, Z]} seed={14} />
-      <group position={[2.18, TOP, Z]} scale={1.3}>
-        <Handheld position={[0, 0, 0]} />
-      </group>
+      <TerracottaPlant position={[1.86, TOP, Z]} />
+      <GameConsole position={[2.16, TOP, Z - 0.02]} />
     </group>
   )
 }
@@ -180,30 +180,6 @@ function LavaLamp({ position, quality }: { position: [number, number, number]; q
   )
 }
 
-/** Quadro com a guitarra, usando a arte enviada pelo usuário (public/decor/guitar-frame.png). */
-function GuitarFrame({ position }: { position: [number, number, number] }) {
-  const tex = useMemo(() => {
-    const t = new TextureLoader().load(`${import.meta.env.BASE_URL}decor/guitar-frame.png`)
-    t.colorSpace = SRGBColorSpace
-    return t
-  }, [])
-  const H = 0.66
-  const W = (H * 333) / 520
-  return (
-    <group position={[position[0], position[1] + H / 2, position[2]]}>
-      <mesh position={[0, 0, -0.01]}>
-        <boxGeometry args={[W, H, 0.02]} />
-        <meshLambertMaterial color="#141416" />
-      </mesh>
-      <mesh position={[0, 0, 0.001]}>
-        <planeGeometry args={[W, H]} />
-        {/* A arte já vem com a luz quente "pintada": mostra como está, sem tingir de novo */}
-        <meshBasicMaterial map={tex} color="#e4dcd4" />
-      </mesh>
-    </group>
-  )
-}
-
 function TrailingPot({ position }: { position: [number, number, number] }) {
   return (
     <group position={position}>
@@ -225,62 +201,127 @@ function TrailingPot({ position }: { position: [number, number, number] }) {
   )
 }
 
-function RetroCamera({ position }: { position: [number, number, number] }) {
+/** Câmera instantânea (genérica), arredondada: corpo creme, topo escuro, lente grande e flash. */
+function InstantCamera({ position }: { position: [number, number, number] }) {
   return (
-    <group position={position} rotation-y={-0.25}>
-      <mesh position={[0, 0.05, 0]}>
-        <boxGeometry args={[0.15, 0.09, 0.07]} />
-        <meshLambertMaterial color="#d8d4c8" />
-      </mesh>
-      <mesh position={[0, 0.035, 0]}>
-        <boxGeometry args={[0.152, 0.04, 0.072]} />
+    <group position={position} rotation-y={-0.2}>
+      <RoundedBox args={[0.14, 0.1, 0.1]} radius={0.015} smoothness={3} position={[0, 0.05, 0]}>
+        <meshLambertMaterial color="#e8e2d4" />
+      </RoundedBox>
+      <RoundedBox args={[0.142, 0.03, 0.102]} radius={0.01} smoothness={2} position={[0, 0.088, 0]}>
         <meshLambertMaterial color="#2a2a2e" />
+      </RoundedBox>
+      {/* lente */}
+      <mesh position={[0.01, 0.048, 0.052]} rotation-x={Math.PI / 2}>
+        <cylinderGeometry args={[0.036, 0.04, 0.03, 18]} />
+        <meshLambertMaterial color="#26262a" />
       </mesh>
-      <mesh position={[0.01, 0.05, 0.04]} rotation-x={Math.PI / 2}>
-        <cylinderGeometry args={[0.032, 0.035, 0.03, 14]} />
-        <meshLambertMaterial color="#1e1e22" />
+      <mesh position={[0.01, 0.048, 0.068]}>
+        <circleGeometry args={[0.024, 16]} />
+        <meshBasicMaterial color="#3a5a8a" />
       </mesh>
-      <mesh position={[0.01, 0.05, 0.056]}>
-        <circleGeometry args={[0.02, 12]} />
-        <meshBasicMaterial color="#4a6a8a" />
+      <mesh position={[0.018, 0.056, 0.069]}>
+        <circleGeometry args={[0.006, 8]} />
+        <meshBasicMaterial color="#c8d8f0" />
       </mesh>
-      <mesh position={[-0.05, 0.105, 0]}>
-        <boxGeometry args={[0.035, 0.02, 0.035]} />
-        <meshLambertMaterial color="#2a2a2e" />
+      {/* flash e visor */}
+      <mesh position={[-0.045, 0.088, 0.052]}>
+        <planeGeometry args={[0.035, 0.018]} />
+        <meshBasicMaterial color="#f4f0e6" />
+      </mesh>
+      <mesh position={[0.045, 0.088, 0.052]}>
+        <planeGeometry args={[0.018, 0.014]} />
+        <meshBasicMaterial color="#1a1a1e" />
+      </mesh>
+      {/* faixa e botão */}
+      <mesh position={[-0.045, 0.045, 0.0505]}>
+        <planeGeometry args={[0.012, 0.05]} />
+        <meshLambertMaterial color="#e8783a" />
+      </mesh>
+      <mesh position={[-0.05, 0.103, 0.02]}>
+        <cylinderGeometry args={[0.008, 0.008, 0.006, 10]} />
+        <meshLambertMaterial color="#c83a3a" />
+      </mesh>
+      {/* foto saindo por baixo da frente */}
+      <mesh position={[0.01, 0.006, 0.055]} rotation-x={-0.3}>
+        <boxGeometry args={[0.07, 0.004, 0.06]} />
+        <meshLambertMaterial color="#f4f2ec" />
       </mesh>
     </group>
   )
 }
 
-/** Videogame portátil retrô (genérico): corpo verde-água, tela e botões. */
-function Handheld({ position }: { position: [number, number, number] }) {
+/** Planta em vaso de barro, bem apoiada no tampo, com folhas arredondadas. */
+function TerracottaPlant({ position }: { position: [number, number, number] }) {
+  const leaves: [number, number, number, number][] = [
+    [0, 0.25, 0, 0.075],
+    [-0.07, 0.21, 0.02, 0.06],
+    [0.07, 0.22, -0.01, 0.062],
+    [0.02, 0.19, 0.07, 0.055],
+    [-0.03, 0.2, -0.06, 0.055],
+    [0.05, 0.29, 0.03, 0.05],
+    [-0.05, 0.28, -0.02, 0.05],
+  ]
   return (
-    <group position={position} rotation={[-0.1, -0.3, 0]}>
-      <mesh position={[0, 0.09, 0]}>
-        <boxGeometry args={[0.1, 0.17, 0.025]} />
-        <meshLambertMaterial color="#7fb8a8" />
+    <group position={position}>
+      <mesh position={[0, 0.065, 0]}>
+        <cylinderGeometry args={[0.085, 0.065, 0.13, 14]} />
+        <meshLambertMaterial color="#c0663a" />
       </mesh>
-      <mesh position={[0, 0.125, 0.0135]}>
-        <planeGeometry args={[0.072, 0.06]} />
-        <meshBasicMaterial color="#3a4a2a" />
+      <mesh position={[0, 0.135, 0]}>
+        <cylinderGeometry args={[0.095, 0.095, 0.025, 14]} />
+        <meshLambertMaterial color="#a8552e" />
       </mesh>
-      <mesh position={[-0.024, 0.055, 0.014]}>
-        <boxGeometry args={[0.03, 0.009, 0.004]} />
-        <meshLambertMaterial color="#2a2a30" />
+      <mesh position={[0, 0.146, 0]} rotation-x={-Math.PI / 2}>
+        <circleGeometry args={[0.085, 14]} />
+        <meshLambertMaterial color="#3a2a20" />
       </mesh>
-      <mesh position={[-0.024, 0.055, 0.014]}>
-        <boxGeometry args={[0.009, 0.03, 0.004]} />
-        <meshLambertMaterial color="#2a2a30" />
-      </mesh>
-      {[
-        [0.02, 0.05],
-        [0.034, 0.062],
-      ].map(([x, y]) => (
-        <mesh key={x} position={[x, y, 0.0135]}>
-          <circleGeometry args={[0.008, 10]} />
-          <meshBasicMaterial color="#c83a4a" />
+      {leaves.map(([x, y, z, r], i) => (
+        <mesh key={i} position={[x, y, z]} scale={[1, 0.85, 1]}>
+          <icosahedronGeometry args={[r, 1]} />
+          <meshLambertMaterial color={i % 2 ? '#4f7f3e' : '#5f924a'} flatShading />
         </mesh>
       ))}
+    </group>
+  )
+}
+
+/** Videogame portátil widescreen (genérico): corpo grafite arredondado e tela acesa. */
+function GameConsole({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position} rotation={[0, -0.15, 0]}>
+      {/* suporte */}
+      <mesh position={[0, 0.01, -0.01]}>
+        <boxGeometry args={[0.12, 0.02, 0.05]} />
+        <meshLambertMaterial color="#26262a" />
+      </mesh>
+      <group position={[0, 0.07, 0]} rotation-x={-0.12}>
+        <RoundedBox args={[0.17, 0.1, 0.018]} radius={0.008} smoothness={2}>
+          <meshLambertMaterial color="#2c2c32" />
+        </RoundedBox>
+        <mesh position={[0, 0, 0.0095]}>
+          <planeGeometry args={[0.13, 0.075]} />
+          <meshBasicMaterial color="#26384a" />
+        </mesh>
+        {/* grips arredondados nas laterais */}
+        {[-1, 1].map((sd) => (
+          <group key={sd} position={[sd * 0.1, 0, 0]}>
+            <RoundedBox args={[0.035, 0.1, 0.022]} radius={0.01} smoothness={3}>
+              <meshLambertMaterial color="#3e3e46" />
+            </RoundedBox>
+            <mesh position={[0, sd > 0 ? -0.018 : 0.018, 0.012]}>
+              <circleGeometry args={[0.007, 10]} />
+              <meshBasicMaterial color="#1a1a1e" />
+            </mesh>
+            {[0, 1, 2, 3].map((k) => (
+              <mesh key={k} position={[Math.cos((k * Math.PI) / 2) * 0.008, (sd > 0 ? 0.018 : -0.018) + Math.sin((k * Math.PI) / 2) * 0.008, 0.012]}>
+                <circleGeometry args={[0.0035, 6]} />
+                <meshBasicMaterial color={sd > 0 ? ['#e8c34a', '#c83a4a', '#3a8ac8', '#5ab85a'][k] : '#9a9aa2'} />
+              </mesh>
+            ))}
+          </group>
+        ))}
+      </group>
     </group>
   )
 }

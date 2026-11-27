@@ -27,7 +27,7 @@ export function VinylShelf({ index, placement }: { index: number; placement: She
       ))}
       <SlotHighlight shelf={index} />
       {/* Móveis 0 e 3 têm cantinhos próprios (MusicCorner / RightCorner); os outros, decoração variada */}
-      {index === 2 && <DecorRow y={SHELF.height + 0.012} z={SHELF.depth / 2} width={SHELF.width - 0.2} seed={index * 5 + 3} dense={index % 2 === 1} />}
+      {index === 2 && <DecorRow y={SHELF.height + 0.001} z={SHELF.depth / 2} width={SHELF.width - 0.2} seed={index * 5 + 3} dense={index % 2 === 1} />}
     </group>
   )
 }

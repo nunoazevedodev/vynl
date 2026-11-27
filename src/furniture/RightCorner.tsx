@@ -11,7 +11,7 @@ import { woodTexture } from '../scene/textures'
  * bandeirinhas, discos emoldurados e, no móvel, discos encostados, fitas e samambaia.
  * Coordenadas locais: x = z do mundo (ao longo da parede), z saindo da parede.
  */
-const TOP = SHELF.height + 0.012
+const TOP = SHELF.height + 0.001
 const Z = SHELF.depth / 2
 
 export function RightCorner() {
