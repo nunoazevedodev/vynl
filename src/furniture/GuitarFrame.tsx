@@ -44,7 +44,6 @@ export function GuitarFrame({ position }: { position: [number, number, number] }
 
 
 const MAPLE = '#e4b878'
-const PICKGUARD = '#f2efe6'
 
 /** Extrusão com borda arredondada (dá o "abaulado" do corpo). */
 function rounded(shape: Shape, depth: number, bevel = 0.01) {
@@ -71,21 +70,6 @@ function bodyShape() {
   return s
 }
 
-/** Escudo grande (11 furos), cobre a parte de cima e contorna os captadores. */
-function guardShape() {
-  const s = new Shape()
-  s.moveTo(-0.03, 0.098)
-  s.bezierCurveTo(-0.055, 0.1, -0.06, 0.13, -0.075, 0.15)
-  s.bezierCurveTo(-0.095, 0.165, -0.112, 0.13, -0.11, 0.06)
-  s.bezierCurveTo(-0.108, -0.02, -0.12, -0.08, -0.09, -0.13)
-  s.bezierCurveTo(-0.06, -0.17, 0.0, -0.18, 0.04, -0.165)
-  s.bezierCurveTo(0.09, -0.15, 0.125, -0.1, 0.12, -0.05)
-  s.bezierCurveTo(0.115, 0.0, 0.085, 0.02, 0.075, 0.05)
-  s.bezierCurveTo(0.068, 0.07, 0.05, 0.083, 0.03, 0.086)
-  s.lineTo(-0.03, 0.098)
-  return s
-}
-
 /** Mão (headstock) clássica: borda reta embaixo, ponta arredondada, curva côncava. */
 function headShape() {
   const s = new Shape()
@@ -105,12 +89,12 @@ function Pickup({ y, rot = 0 }: { y: number; rot?: number }) {
     <group position={[0.0, y, 0.031]} rotation-z={rot}>
       <mesh rotation-z={Math.PI / 2}>
         <capsuleGeometry args={[0.0095, 0.052, 3, 10]} />
-        <meshLambertMaterial color="#f6f4ee" />
+        <meshLambertMaterial color="#1e1e24" />
       </mesh>
       {Array.from({ length: 6 }, (_, k) => (
         <mesh key={k} position={[-0.025 + k * 0.01, 0, 0.0095]}>
           <circleGeometry args={[0.0022, 6]} />
-          <meshBasicMaterial color="#8a8a8e" />
+          <meshBasicMaterial color="#9a9aa2" />
         </mesh>
       ))}
     </group>
@@ -128,7 +112,6 @@ function BlackStrat() {
     neck.lineTo(-0.028, 0.06)
     return {
       body: rounded(bodyShape(), 0.034, 0.011),
-      guard: new ExtrudeGeometry(guardShape(), { depth: 0.002, bevelEnabled: false, curveSegments: 14 }),
       neck: rounded(neck, 0.016, 0.004),
       head: rounded(headShape(), 0.012, 0.003),
     }
@@ -138,9 +121,6 @@ function BlackStrat() {
     <group>
       <mesh geometry={geo.body}>
         <meshLambertMaterial color="#121216" />
-      </mesh>
-      <mesh geometry={geo.guard} position={[0.012, 0.004, 0.0285]} scale={[0.76, 0.84, 1]}>
-        <meshLambertMaterial color={PICKGUARD} />
       </mesh>
       <Pickup y={0.055} rot={0} />
       <Pickup y={0.0} rot={0} />
@@ -164,12 +144,12 @@ function BlackStrat() {
       ].map(([x, y]) => (
         <mesh key={y} position={[x, y, 0.035]} rotation-x={Math.PI / 2}>
           <cylinderGeometry args={[0.0105, 0.012, 0.012, 12]} />
-          <meshLambertMaterial color="#f6f4ee" />
+          <meshLambertMaterial color="#1e1e24" />
         </mesh>
       ))}
       <mesh position={[0.07, -0.035, 0.033]} rotation-z={-0.5}>
         <boxGeometry args={[0.004, 0.018, 0.006]} />
-        <meshLambertMaterial color="#f6f4ee" />
+        <meshLambertMaterial color="#1e1e24" />
       </mesh>
       {/* Plug (jack) na lateral inferior */}
       <mesh position={[0.122, -0.165, 0.0285]} rotation-z={0.6}>
