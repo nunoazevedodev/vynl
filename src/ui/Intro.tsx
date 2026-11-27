@@ -18,7 +18,7 @@ export function Intro() {
     <div className="fixed inset-0 grid place-items-center bg-[#140f0c]/55 backdrop-blur-[2px]">
       <div className="panel w-[min(92vw,400px)] p-7 text-center rise">
         <div className="mb-3 flex items-center justify-center gap-2 text-3xl tracking-wide text-ink">
-          <Disc3 className="text-warm" /> vynl
+          <Disc3 className="text-warm" /> VNYL
         </div>
         <p className="mb-6 text-sm leading-relaxed text-ink-soft">Um refúgio para quem coleciona sons e vive a música.</p>
         <button className="btn-primary w-full py-2.5 text-base" disabled={!loaded} onClick={enter}>

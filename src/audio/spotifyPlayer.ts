@@ -105,7 +105,7 @@ export async function initSpotify() {
   await loadSdk()
   const volume = useAppStore.getState().settings.volume
   player = new window.Spotify!.Player({
-    name: 'vynl · radiola',
+    name: 'VNYL · radiola',
     volume,
     getOAuthToken: (cb) => void getToken(clientId()).then((t) => t && cb(t)),
   })

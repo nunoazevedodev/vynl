@@ -1,9 +1,9 @@
 @echo off
-title vynl
+title VNYL
 cd /d "%~dp0"
 
 echo.
-echo  Fechando o vynl antigo (se estiver aberto)...
+echo  Fechando o VNYL antigo (se estiver aberto)...
 for /f "tokens=5" %%p in ('netstat -ano ^| findstr ":5173" ^| findstr "LISTENING"') do taskkill /PID %%p /F >nul 2>&1
 
 echo  Baixando a versao mais nova do GitHub...
@@ -16,7 +16,7 @@ call npm install --no-audit --no-fund
 git checkout -- package-lock.json >nul 2>&1
 
 echo.
-echo  Abrindo o vynl no navegador. Deixe esta janela aberta enquanto usa.
+echo  Abrindo o VNYL no navegador. Deixe esta janela aberta enquanto usa.
 echo.
 start "" http://localhost:5173
 call npm run dev

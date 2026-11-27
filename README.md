@@ -1,4 +1,4 @@
-# vynl
+# VNYL
 
 Sua coleção de discos de vinil dentro de um quarto 3D explorável em primeira pessoa, com estética de jogo de PlayStation 2: low-poly, texturas suaves, luz aconchegante e uma cidade pela janela que passa por manhã, tarde, pôr do sol e noite.
 
@@ -37,11 +37,11 @@ O token fica salvo só no seu navegador (IndexedDB). A busca precisa rodar via `
 
 ## Spotify (música de verdade)
 
-Com **Spotify Premium**, o disco que está na radiola toca de verdade: o vynl vira um aparelho do Spotify (Web Playback SDK), busca o álbum e toca do começo. A barra de baixo mostra a faixa, o progresso (dá para arrastar) e tem voltar, pausar, avançar e volume.
+Com **Spotify Premium**, o disco que está na radiola toca de verdade: o VNYL vira um aparelho do Spotify (Web Playback SDK), busca o álbum e toca do começo. A barra de baixo mostra a faixa, o progresso (dá para arrastar) e tem voltar, pausar, avançar e volume.
 
 1. Em https://developer.spotify.com/dashboard → *Create app*.
 2. *Redirect URI*: `http://127.0.0.1:5173/callback.html`; marque **Web API** e **Web Playback SDK**.
-3. Copie o **Client ID** → vynl → Configurações → Spotify → cole → *Entrar com o Spotify*.
+3. Copie o **Client ID** → VNYL → Configurações → Spotify → cole → *Entrar com o Spotify*.
 
 O servidor de desenvolvimento escuta em 127.0.0.1 (exigência do Spotify para o retorno do login); a página de retorno devolve para `localhost`, onde ficam os seus dados.
 
